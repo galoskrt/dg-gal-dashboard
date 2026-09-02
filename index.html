@@ -92,6 +92,16 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .q span{display:block;font-size:11px;font-weight:800;color:var(--orangeS);margin-bottom:4px}
 .q p{margin:0;font-size:14px;line-height:1.55;overflow-wrap:anywhere}
 
+.meet{margin-top:12px;background:var(--greenT);border:1px solid var(--greenL);
+  border-radius:13px;padding:12px 14px}
+.meet.off{background:#f4f2f8;border-color:var(--line2)}
+.meet .mh{display:block;font-size:11px;font-weight:800;color:var(--greenS);margin-bottom:5px}
+.meet.off .mh{color:var(--mut2)}
+.meet .mw{margin:0;font-size:15px;font-weight:800;color:var(--txt);line-height:1.45}
+.meet .mt{margin:3px 0 0;font-size:12.5px;color:var(--mut);line-height:1.45;overflow-wrap:anywhere}
+.meet .btn{margin-top:10px}
+.meet .btn.zoom{background:var(--greenS);border-color:var(--greenS);color:#fff}
+.meet .btn.copy{margin-right:7px;color:var(--mut)}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;min-width:0}
 .btn{display:inline-block;font-size:13.5px;font-weight:800;padding:9px 14px;border-radius:11px;
   text-decoration:none;border:1px solid var(--line2);background:#fff;color:var(--txt);
@@ -210,12 +220,17 @@ var KEY = null;      /* המפתח הגזור, חי רק בזיכרון ובלש
 var LEADS = [];
 var OPEN = {};
 
+/* הסטטוסים של גל, בסדר שהוא נתן. הסדר הזה הוא מסע הליד. */
 var STATUS = {
-  new:'חדש', no1:'לא ענה 1', no2:'לא ענה 2', no3:'לא ענה 3', no4:'לא ענה 4',
-  answered:'ענה', cold_fu:'מעקב קר', hot_fu:'מעקב חם', relevant:'רלוונטי',
-  proposal:'הצעה נשלחה', quest:'שאלות', meeting_set:'שיחה נקבעה',
-  meeting_attended:'שיחה התקיימה', meeting_noshow:'לא הגיע',
-  meeting_won:'נסגר', irrelevant:'לא רלוונטי', invalid:'לא תקין'
+  new:'מילא שאלון אבחון',
+  no1:'לא ענה 1', no2:'לא ענה 2', no3:'לא ענה 3',
+  answered:'התקשרתי וענה',
+  meeting_set:'קבע פגישת ניתוח',
+  meeting_noshow:'לא הגיע או ביטל',
+  meeting_attended:'הגיע לפגישה',
+  proposal:'קיבל הצעת מחיר',
+  meeting_won:'נסגרה עסקה',
+  cold_fu:'פולואפ קר', hot_fu:'פולואפ חם'
 };
 var BANDS = ['now','soon','later'];
 var BAND_LABEL = { now:'תרים טלפון עכשיו', soon:'שווה מעקב היום', later:'עוד לא בשל' };
@@ -344,6 +359,49 @@ function renderStats(){
   document.getElementById('stats').innerHTML = h;
 }
 
+
+/* פרטי הפגישה. נפתח מעצמו ברגע שנקבעה שיחה, כי זה מה שגל צריך לראות
+   בלי לחפש: מתי, ואיפה לוחצים. */
+function meetWhen(iso, tz){
+  if(!iso) return '';
+  var d = new Date(iso);
+  var day = d.toLocaleDateString('he-IL', { weekday:'long', day:'numeric', month:'long' });
+  var hour = d.toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' });
+  return day + ' בשעה ' + hour;
+}
+function meetPanel(l){
+  var m = l.meeting || {};
+  if(!m.start && !m.zoom) return '';
+  var cancelled = !!m.cancelled_at;
+  return '<div class="meet' + (cancelled ? ' off' : '') + '">'
+    + '<span class="mh">' + (cancelled ? 'הפגישה בוטלה' : 'פגישת ניתוח נקבעה') + '</span>'
+    + (m.start ? '<p class="mw">' + esc(meetWhen(m.start, m.tz)) + '</p>' : '')
+    + (m.title ? '<p class="mt">' + esc(m.title) + '</p>' : '')
+    + (!cancelled && m.zoom
+        ? '<a class="btn zoom" href="' + esc(m.zoom) + '" target="_blank" rel="noopener">'
+          + 'כניסה לזום</a>'
+          + '<button class="btn copy" data-copy="' + esc(m.zoom) + '">'
+          + 'העתקת הקישור</button>'
+        : '')
+    + '</div>';
+}
+/* מאזין אחד לכל כפתורי ההעתקה, כך ששום קישור לא צריך לעבור דרך onclick */
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('[data-copy]');
+  if(!b) return;
+  e.preventDefault();
+  var url = b.getAttribute('data-copy'), label = b.textContent;
+  var done = function(){ b.textContent = 'הועתק';
+    setTimeout(function(){ b.textContent = label; }, 1600); };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done, function(){ toast('לא הצלחתי להעתיק'); });
+  } else {
+    var i = document.createElement('input'); i.value = url; document.body.appendChild(i);
+    i.select(); try { document.execCommand('copy'); done(); } catch(x){ toast('לא הצלחתי להעתיק'); }
+    document.body.removeChild(i);
+  }
+});
+
 function card(l){
   var m = l.map || {}, p = l.priority || {}, open = !!OPEN[l.id];
   var opts = Object.keys(STATUS).map(function(k){
@@ -387,7 +445,7 @@ function card(l){
     +     '<div class="chips">' + chips + '</div></div>'
     +   '<div class="cright"><div class="csum">' + money(m.main) + '</div>'
     +     '<div class="cago">' + esc(ago(l.created_at)) + '</div></div>'
-    + '</div>' + q
+    + '</div>' + q + meetPanel(l)
     + '<div class="row" onclick="event.stopPropagation()">'
     +   (l.phone ? '<a class="btn call" href="tel:' + esc(l.phone) + '">' + esc(l.phone) + '</a>' : '')
     +   (l.phone ? '<a class="btn wa" href="' + wa(l.phone) + '" target="_blank" rel="noopener">וואטסאפ</a>' : '')
