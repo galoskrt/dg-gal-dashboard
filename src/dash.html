@@ -80,6 +80,16 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chip{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:8px;
   background:#f4f2f8;color:var(--mut);white-space:nowrap}
+/* שיוך למודעה. גוון נפרד מהצ'יפים של האבחון, כדי שיהיה ברור שזה
+   מאיפה הוא הגיע ולא מה הוא ענה. */
+.chip.adchip{background:#efe9fb;color:#5b3fa8}
+.ph{margin:18px 0 8px;font-size:13px;font-weight:800;color:var(--txt)}
+.tw{overflow-x:auto}
+.adtab{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
+.adtab th,.adtab td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line)}
+.adtab th{font-weight:800;color:var(--mut2);font-size:11.5px}
+.adtab td:first-child{font-weight:800}
+.adtab tbody tr:last-child td{border-bottom:0}
 .chip.aw-sees{background:var(--greenT);color:var(--greenS)}
 .chip.aw-blind{background:var(--pinkT);color:var(--pinkS)}
 .chip.aw-burned{background:var(--orangeT);color:var(--orangeS)}
@@ -243,6 +253,21 @@ var BAND_NOTE = {
 var AWARE = { blind:'לא רואה את המספרים', sees:'רואה ומחפש פתרון', burned:'כבר ניסה ונכווה' };
 var TEMP = { hot:'חם', warm:'פושר', cold:'קר' };
 var SRC = { paid:'פרסום ממומן', mix:'ממומן ואורגני', ref:'פה לאוזן', org:'אורגני' };
+
+/* שיוך למודעה. הדף שולח utm_term בכתובת, השאלון מעביר אותו לוורקר כ-utm.ad,
+   וכאן הוא הופך לשם קריא. המפתחות חייבים להישאר זהים ל-utm_term שבמודעות
+   עצמן במטא, אחרת ליד יגיע בלי שיוך ואי אפשר יהיה לדעת מי הביא אותו. */
+var ADS = {
+  'a1-guess':   'א · ניחוש',
+  'b2-expert':  'ב · מומחיות',
+  'c3-cost':    'ג · עלות עסקה',
+  'd4-control': 'ד · שליטה',
+  'e5-video':   'ה · וידאו'
+};
+/* ליד בלי תיוג אינו שגיאה: הוא הגיע אורגנית, מהמלצה, או הוזן ידנית. */
+var NO_AD = 'לא ממודעה';
+function adKey(l){ return ((l.utm || {}).ad || '').trim(); }
+function adName(l){ var k = adKey(l); return k ? (ADS[k] || k) : NO_AD; }
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
   return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
@@ -413,6 +438,9 @@ function card(l){
   if(AWARE[m.awareness]) chips += '<span class="chip aw-' + m.awareness + '">' + AWARE[m.awareness] + '</span>';
   if(TEMP[m.temp]) chips += '<span class="chip tp-' + m.temp + '">' + TEMP[m.temp] + '</span>';
   if(SRC[m.source]) chips += '<span class="chip">' + SRC[m.source] + '</span>';
+  /* מאיזו מודעה הוא הגיע. מוצג רק כשיש תיוג, כדי שלידים אורגניים
+     לא ייראו כאילו משהו נכשל. */
+  if(adKey(l)) chips += '<span class="chip adchip">' + esc(adName(l)) + '</span>';
 
   var q = l.question
     ? '<div class="q"><span>שאלה שהשאירו</span><p>' + esc(l.question) + '</p></div>' : '';
@@ -498,11 +526,42 @@ function openPerf(){
   var won = LEADS.filter(function(l){ return reached(l, 'won', ['meeting_won']); }).length;
   var rev = LEADS.reduce(function(s, l){ return s + (Number(l.deal_amount) || 0); }, 0);
 
+  /* ── פילוח לפי מודעה ─────────────────────────────────────────
+     המדד של מסמך 09 הוא עלות למפה שהושלמה, ולכן הספירה כאן היא לפי
+     מודעה ולא לפי קמפיין. הטבלה נבנית מהמודעות שבאמת הגיעו לידים
+     מהן, ולכן היא מתחילה ריקה ומתמלאת מעצמה ברגע שהקמפיין נדלק. */
+  var byAd = {};
+  LEADS.forEach(function(l){
+    var k = adName(l);
+    if(!byAd[k]) byAd[k] = { maps:0, booked:0, held:0, won:0, rev:0 };
+    var r = byAd[k];
+    r.maps++;
+    if(reached(l, 'booked', BOOKED)) r.booked++;
+    if(reached(l, 'held', HELD)) r.held++;
+    if(reached(l, 'won', ['meeting_won'])) r.won++;
+    r.rev += Number(l.deal_amount) || 0;
+  });
+  var order = Object.keys(ADS).map(function(k){ return ADS[k]; }).concat([NO_AD]);
+  var rows = order.filter(function(k){ return byAd[k]; }).map(function(k){
+    var r = byAd[k];
+    return '<tr><td>' + esc(k) + '</td><td>' + r.maps + '</td><td>' + r.booked
+      + '</td><td>' + r.held + '</td><td>' + r.won + '</td><td>'
+      + (r.rev ? money(r.rev) : '·') + '</td></tr>';
+  }).join('');
+
+  var perAd = '<h4 class="ph">לפי מודעה</h4>'
+    + (rows
+        ? '<div class="tw"><table class="adtab"><thead><tr><th>מודעה</th><th>אבחונים</th>'
+          + '<th>נקבעו</th><th>התקיימו</th><th>נסגרו</th><th>הכנסה</th></tr></thead>'
+          + '<tbody>' + rows + '</tbody></table></div>'
+        : '<div class="nodata">אין עדיין ליד שהגיע ממודעה. הטבלה הזאת תתמלא '
+          + 'מעצמה ברגע שהקמפיין נדלק, שורה לכל מודעה.</div>');
+
   var body =
-    '<div class="nodata">ההוצאה מפייסבוק עוד לא נמדדת, כי הקמפיין של המשפך '
-    + 'טרם נבנה. ברגע שהוא קיים, המסך הזה יראה עלות לשיחה שהתקיימה, עלות ללקוח '
-    + 'משלם, בזבוז על ביטולים ו-ROAS. עד אז מוצגות הספירות בלבד, ולא מספר שאי '
-    + 'אפשר לייחס.</div>'
+    '<div class="nodata">ההוצאה מפייסבוק עוד לא נמשכת לכאן, ולכן אין עדיין עלות '
+    + 'למפה שהושלמה. הקמפיין בנוי ומושהה, והספירות למטה מתחילות מאפס ומתמלאות '
+    + 'לבד ברגע שהוא נדלק.</div>'
+    + perAd
     + '<div class="fun" style="margin-top:16px">'
     +   f('אבחונים שהושלמו', n)
     +   f('שיחות שנקבעו', booked)
