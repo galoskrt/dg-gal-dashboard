@@ -280,6 +280,8 @@ var CAMPS = {
   'leakmap-rmk-sep26': 'רימרקטינג'
 };
 var SETS = {
+  'broad-feed':           'קהל רחב · פיד',
+  'broad-story':          'קהל רחב · סטורי ורילס',
   'broad-il-2855':        'קהל רחב · ישראל 28 עד 55',
   'started-not-finished': 'התחילו ולא סיימו · פיד',
   'rmk-story':            'התחילו ולא סיימו · סטורי ורילס'
@@ -305,7 +307,8 @@ function adName(l){ var k = adKey(l); return k ? ((ADS[k] || {}).name || k) : NO
 function adImage(l){
   var e = ADS[adKey(l)];
   if(!e) return '';
-  return ADIMG + e.img + (setKey(l) === 'rmk-story' ? '-story' : '-feed') + '.png';
+  var vertical = setKey(l).indexOf('story') !== -1;
+  return ADIMG + e.img + (vertical ? '-story' : '-feed') + '.png';
 }
 function adBlock(l){
   if(!adKey(l)) return '';
