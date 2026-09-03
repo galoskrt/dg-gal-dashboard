@@ -83,6 +83,15 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 /* שיוך למודעה. גוון נפרד מהצ'יפים של האבחון, כדי שיהיה ברור שזה
    מאיפה הוא הגיע ולא מה הוא ענה. */
 .chip.adchip{background:#efe9fb;color:#5b3fa8}
+/* המודעה שהביאה אותו, עם הקריאייטיב עצמו. לראות את התמונה שהוא ראה
+   שווה יותר מכל קוד מעקב, כי היא מזכירה מיד באיזה מסר הוא נגע. */
+.adbox{display:flex;gap:11px;align-items:center;background:#faf9fd;
+  border:1px solid var(--line);border-radius:13px;padding:9px;margin:0 0 14px}
+.adthumb{width:56px;height:56px;object-fit:cover;border-radius:9px;display:block;
+  border:1px solid var(--line2);background:#fff}
+.adwho{min-width:0;display:flex;flex-direction:column;gap:1px}
+.adwho b{font-size:13.5px;font-weight:800;color:var(--txt);overflow-wrap:anywhere}
+.adwho span{font-size:11.5px;color:var(--mut2);overflow-wrap:anywhere}
 .ph{margin:18px 0 8px;font-size:13px;font-weight:800;color:var(--txt)}
 .tw{overflow-x:auto}
 .adtab{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap}
@@ -254,24 +263,59 @@ var AWARE = { blind:'לא רואה את המספרים', sees:'רואה ומחפ
 var TEMP = { hot:'חם', warm:'פושר', cold:'קר' };
 var SRC = { paid:'פרסום ממומן', mix:'ממומן ואורגני', ref:'פה לאוזן', org:'אורגני' };
 
-/* שיוך למודעה. הדף שולח utm_term בכתובת, השאלון מעביר אותו לוורקר כ-utm.ad,
-   וכאן הוא הופך לשם קריא. המפתחות חייבים להישאר זהים ל-utm_term שבמודעות
-   עצמן במטא, אחרת ליד יגיע בלי שיוך ואי אפשר יהיה לדעת מי הביא אותו. */
-var ADS = {
-  'a1-guess':   'א · ניחוש',
-  'b2-expert':  'ב · מומחיות',
-  'c3-cost':    'ג · עלות עסקה',
-  'd4-control': 'ד · שליטה',
-  'e5-video':   'ה · וידאו',
-  /* רימרקטינג. קמפיין נפרד, ולכן גם שורות נפרדות בטבלה: מי שחזר
-     אחרי שהתחיל ולא סיים אינו אותו ליד כמו מי שהגיע קר. */
-  'r1-unfinished': 'ר1 · האבחון נשאר פתוח',
-  'r2-map':        'ר2 · המפה שמחכה בסוף'
+/* שיוך למודעה, בשמות ולא בקודים.
+
+   הכתובת שהמודעה שולחת נושאת שלושה תגים: utm_campaign, utm_content
+   ו-utm_term. הם נכונים למערכת ולא לעין, ולכן הם מתורגמים כאן לשמות
+   שאפשר לקרוא בלי לפענח כלום.
+
+   ★ המפתחות חייבים להישאר זהים למה שיושב בקישור של המודעה במטא.
+   שינוי באחד מהם בלי שינוי כאן, והליד יגיע בלי שיוך. */
+var ADIMG = 'https://map.dg-gal.online/ads/';
+
+var CAMPS = {
+  'leakmap-sep26':     'קמפיין האבחון',
+  'leakmap-rmk-sep26': 'רימרקטינג'
 };
+var SETS = {
+  'broad-il-2855':        'קהל רחב · ישראל 28 עד 55',
+  'started-not-finished': 'התחילו ולא סיימו · פיד',
+  'rmk-story':            'התחילו ולא סיימו · סטורי ורילס'
+};
+var ADS = {
+  'a1-guess':      { name: 'א · ניחוש',             img: 'a1' },
+  'b2-expert':     { name: 'ב · מומחיות',           img: 'b2' },
+  'c3-cost':       { name: 'ג · עלות עסקה',         img: 'c3' },
+  'd4-control':    { name: 'ד · שליטה',             img: 'd4' },
+  'e5-video':      { name: 'ה · וידאו',             img: 'a1' },
+  'r1-unfinished': { name: 'ר1 · האבחון נשאר פתוח', img: 'a1' },
+  'r2-map':        { name: 'ר2 · המפה שמחכה בסוף',  img: 'c3' }
+};
+
 /* ליד בלי תיוג אינו שגיאה: הוא הגיע אורגנית, מהמלצה, או הוזן ידנית. */
 var NO_AD = 'לא ממודעה';
 function adKey(l){ return ((l.utm || {}).ad || '').trim(); }
-function adName(l){ var k = adKey(l); return k ? (ADS[k] || k) : NO_AD; }
+function setKey(l){ return ((l.utm || {}).adset || '').trim(); }
+function campKey(l){ return ((l.utm || {}).campaign || '').trim(); }
+function adName(l){ var k = adKey(l); return k ? ((ADS[k] || {}).name || k) : NO_AD; }
+
+/* הקריאייטיב עצמו. בסטורי מוצגת הגרסה האנכית, כי זו שהוא באמת ראה. */
+function adImage(l){
+  var e = ADS[adKey(l)];
+  if(!e) return '';
+  return ADIMG + e.img + (setKey(l) === 'rmk-story' ? '-story' : '-feed') + '.png';
+}
+function adBlock(l){
+  if(!adKey(l)) return '';
+  var img = adImage(l);
+  return '<div class="adbox">'
+    + (img ? '<a href="' + img + '" target="_blank" rel="noopener">'
+             + '<img class="adthumb" src="' + img + '" alt="" loading="lazy"></a>' : '')
+    + '<div class="adwho"><b>' + esc(adName(l)) + '</b>'
+    + '<span>' + esc(SETS[setKey(l)] || setKey(l) || 'קבוצה לא מזוהה') + '</span>'
+    + '<span>' + esc(CAMPS[campKey(l)] || campKey(l) || 'קמפיין לא מזוהה') + '</span>'
+    + '</div></div>';
+}
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){
   return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
@@ -462,6 +506,7 @@ function card(l){
     var mail = '<div class="mail"><span class="' + ((l.map_mail || {}).id ? 'ok' : 'no') + '">מפה במייל</span>'
       + '<span class="' + (l.summary_sent ? 'ok' : 'no') + '">סיכום אליי</span></div>';
     body = '<div class="body">'
+      + adBlock(l)
       + (leaks ? '<h4>שלוש הדליפות, לפי סדר הכסף</h4><ol class="leaks">' + leaks + '</ol>' : '')
       + (ans ? '<h4>מה סימנו באבחון</h4><div class="ans">' + ans + '</div>' : '')
       + '<label class="note">הערות<textarea rows="2" placeholder="מה נאמר בשיחה" '
