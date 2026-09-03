@@ -277,12 +277,13 @@ var CAMPS = {
   'leakmap-sep26':     'קמפיין האבחון',
   'leakmap-rmk-sep26': 'רימרקטינג'
 };
+/* קבוצת מודעות אחת בכל קמפיין. המפתחות הישנים נשארים ממופים כי
+   מודעות קיימות עדיין נושאות אותם בכתובת, ואסור שליד יגיע בלי שם. */
 var SETS = {
-  'broad-feed':           'קהל רחב · פיד',
-  'broad-story':          'קהל רחב · סטורי ורילס',
+  'broad-feed':           'קהל רחב · ישראל 28 עד 55',
   'broad-il-2855':        'קהל רחב · ישראל 28 עד 55',
-  'started-not-finished': 'התחילו ולא סיימו · פיד',
-  'rmk-story':            'התחילו ולא סיימו · סטורי ורילס'
+  'started-not-finished': 'התחילו ולא סיימו · 30 יום',
+  'rmk-story':            'התחילו ולא סיימו · 30 יום'
 };
 var ADS = {
   'a1-guess':      { name: 'א · ניחוש',             img: 'a1' },
@@ -299,14 +300,21 @@ var NO_AD = 'לא ממודעה';
 function adKey(l){ return ((l.utm || {}).ad || '').trim(); }
 function setKey(l){ return ((l.utm || {}).adset || '').trim(); }
 function campKey(l){ return ((l.utm || {}).campaign || '').trim(); }
-function adName(l){ var k = adKey(l); return k ? ((ADS[k] || {}).name || k) : NO_AD; }
+/* אם המפתח לא מוכר, מציגים משפט בעברית ולא את הקוד עצמו. גל לא
+   אמור לראares utm בשום מצב. */
+function adName(l){
+  var k = adKey(l);
+  if(!k) return NO_AD;
+  return (ADS[k] || {}).name || 'מודעה שעוד לא נרשמה כאן';
+}
 
 /* הקריאייטיב עצמו. בסטורי מוצגת הגרסה האנכית, כי זו שהוא באמת ראה. */
 function adImage(l){
   var e = ADS[adKey(l)];
   if(!e) return '';
-  var vertical = setKey(l).indexOf('story') !== -1;
-  return ADIMG + e.img + (vertical ? '-story' : '-feed') + '.png';
+  /* מודעה אחת מגישה את כל המיקומים דרך התאמת נכסים, ולכן מוצגת
+     תמונת הפיד כמייצגת. */
+  return ADIMG + e.img + '-feed.png';
 }
 function adBlock(l){
   if(!adKey(l)) return '';
@@ -315,8 +323,8 @@ function adBlock(l){
     + (img ? '<a href="' + img + '" target="_blank" rel="noopener">'
              + '<img class="adthumb" src="' + img + '" alt="" loading="lazy"></a>' : '')
     + '<div class="adwho"><b>' + esc(adName(l)) + '</b>'
-    + '<span>' + esc(SETS[setKey(l)] || setKey(l) || 'קבוצה לא מזוהה') + '</span>'
-    + '<span>' + esc(CAMPS[campKey(l)] || campKey(l) || 'קמפיין לא מזוהה') + '</span>'
+    + '<span>' + esc(SETS[setKey(l)] || 'קבוצת מודעות שעוד לא נרשמה כאן') + '</span>'
+    + '<span>' + esc(CAMPS[campKey(l)] || 'קמפיין שעוד לא נרשם כאן') + '</span>'
     + '</div></div>';
 }
 
