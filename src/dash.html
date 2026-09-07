@@ -99,6 +99,7 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .adtab th{font-weight:800;color:var(--mut2);font-size:11.5px}
 .adtab td:first-child{font-weight:800}
 .adtab tbody tr:last-child td{border-bottom:0}
+.adtab .pc{color:var(--mut2);font-weight:700}
 .chip.aw-sees{background:var(--greenT);color:var(--greenS)}
 .chip.aw-blind{background:var(--pinkT);color:var(--pinkS)}
 .chip.aw-burned{background:var(--orangeT);color:var(--orangeS)}
@@ -578,7 +579,57 @@ function saveDeal(id, v){ patch(id, { deal_amount: Number(v) || 0 }, 'הסכום
 /* ── ביצועים ─────────────────────────────────────────────
    מה שגל מחליט לפיו. עלות לפנייה איננה כאן במתכוון: היא המדד שגורם
    לאנשים לקנות תנועה זולה ולא לקוחות.                                */
-function openPerf(){
+/* אותה שיטה שהוורקר משתמש בה בדיוק, כדי שתאריך ליד וכניסה לדף
+   יתאימו זה לזה גם כשהם נספרים בשני מקומות שונים. */
+function ilDate(d){
+  return new Intl.DateTimeFormat('en-CA', { timeZone:'Asia/Jerusalem' }).format(d || new Date());
+}
+/* מילאו שאלון זה בדיוק ליד שנוצר, בלי צורך לספור אותו פעמיים בשרת.
+   מקבצים לפי היום שלו כאן, כדי להשוות מול כניסות והתחלות מאותו יום. */
+function completionsByDate(){
+  var out = {};
+  LEADS.forEach(function(l){
+    var d = l.created_at ? ilDate(new Date(l.created_at)) : null;
+    if(!d) return;
+    out[d] = (out[d] || 0) + 1;
+  });
+  return out;
+}
+function pct(a, b){ return b ? Math.round(a / b * 100) + '%' : '·'; }
+
+async function funnelPanel(){
+  var stats = null;
+  try { stats = await wk('/funnel-stats?days=14'); } catch(x){ return ''; }
+  var days = (stats && stats.days) || [];
+  var done = completionsByDate();
+  var tv=0, tc=0, ts=0, td=0;
+  var rows = days.map(function(r){
+    var d = done[r.date] || 0;
+    tv += r.view; tc += r.click; ts += r.start; td += d;
+    return '<tr><td>' + r.date.slice(5) + '</td><td>' + r.view + '</td>'
+      + '<td>' + r.click + ' <span class="pc">' + pct(r.click, r.view) + '</span></td>'
+      + '<td>' + r.start + ' <span class="pc">' + pct(r.start, r.click) + '</span></td>'
+      + '<td>' + d + ' <span class="pc">' + pct(d, r.start) + '</span></td></tr>';
+  }).join('');
+  var anyData = tv || tc || ts || td;
+  return '<h4 class="ph">משפך הדף, 14 יום אחרונים</h4>'
+    + (anyData
+        ? '<div class="fun" style="margin-bottom:12px">'
+          +   f('כניסות לדף', tv)
+          +   f('עברו לשאלון', tc + ' (' + pct(tc, tv) + ')')
+          +   f('התחילו לענות', ts + ' (' + pct(ts, tc) + ')')
+          +   f('מילאו שאלון', td + ' (' + pct(td, ts) + ')')
+          + '</div>'
+          + '<div class="tw"><table class="adtab"><thead><tr><th>תאריך</th><th>כניסות</th>'
+            + '<th>עברו לשאלון</th><th>התחילו</th><th>מילאו</th></tr></thead>'
+            + '<tbody>' + rows + '</tbody></table></div>'
+          + '<p class="sub" style="margin-top:8px">אם יש הרבה כניסות ומעט מעברים לשאלון, '
+            + 'הבעיה כנראה בדף. אם יש הרבה שהתחילו ומעט שסיימו, הבעיה כנראה בשאלון עצמו.</p>'
+        : '<div class="nodata">אין עדיין נתונים. הטבלה הזאת מתמלאת לבד מרגע שמישהו נכנס לדף.</div>');
+}
+
+async function openPerf(){
+  var funnel = await funnelPanel();
   var n = LEADS.length;
   var booked = LEADS.filter(function(l){ return reached(l, 'booked', BOOKED); }).length;
   var held = LEADS.filter(function(l){ return reached(l, 'held', HELD); }).length;
@@ -621,6 +672,7 @@ function openPerf(){
     '<div class="nodata">ההוצאה מפייסבוק עוד לא נמשכת לכאן, ולכן אין עדיין עלות '
     + 'למפה שהושלמה. הקמפיין בנוי ומושהה, והספירות למטה מתחילות מאפס ומתמלאות '
     + 'לבד ברגע שהוא נדלק.</div>'
+    + funnel
     + perAd
     + '<div class="fun" style="margin-top:16px">'
     +   f('אבחונים שהושלמו', n)
