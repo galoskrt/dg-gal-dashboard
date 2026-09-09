@@ -186,6 +186,25 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
   .kpis{grid-template-columns:1fr}
   .row .btn,.row select{flex:1 1 auto;text-align:center;max-width:none}
 }
+
+.eng{display:grid;gap:7px;margin:2px 0 14px}
+.erow{display:flex;gap:9px;align-items:baseline;font-size:13.5px}
+.el{flex:0 0 76px;color:#8b8899;font-size:12.5px}
+.ev{color:#14121c;line-height:1.5}
+.unsub{margin:0 0 14px}
+.unsub button{background:#fff;border:1px solid #dfdbe9;border-radius:11px;padding:9px 13px;
+  font:inherit;font-size:13px;color:#8b8899;cursor:pointer}
+.unsub button:hover{border-color:#ff2d8e;color:#ff2d8e}
+.unsub.on{background:#fff5f9;border:1px solid #ffd0e4;border-radius:14px;padding:13px 14px;
+  display:grid;gap:5px}
+.unsub.on b{font-size:14px;color:#14121c}
+.unsub.on span{font-size:12.5px;color:#4f4d5e;line-height:1.6}
+.unsub.on button{justify-self:start;margin-top:4px}
+.chip.unschip{background:#fff0f6;color:#c2185b;border-color:#ffd0e4}
+.adtab .on{font-size:11.5px;color:#12a05e;font-weight:700}
+.adtab .off{font-size:11.5px;color:#8b8899;font-weight:700}
+.warn{margin-top:9px;font-size:12.5px;color:#a05a12;background:#fff8ec;
+  border:1px solid #f3e2c4;border-radius:11px;padding:10px 12px;line-height:1.6}
 </style>
 </head>
 <body>
@@ -501,6 +520,8 @@ function card(l){
   /* מאיזו מודעה הוא הגיע. מוצג רק כשיש תיוג, כדי שלידים אורגניים
      לא ייראו כאילו משהו נכשל. */
   if(adKey(l)) chips += '<span class="chip adchip">' + esc(adName(l)) + '</span>';
+  /* מוצג בראש הכרטיס בכוונה. מי שביקש הסרה חייב להיראות לפני שמתקשרים. */
+  if(l.unsub) chips += '<span class="chip unschip">ביקש הסרה</span>';
 
   var q = l.question
     ? '<div class="q"><span>שאלה שהשאירו</span><p>' + esc(l.question) + '</p></div>' : '';
@@ -525,7 +546,7 @@ function card(l){
       + 'onchange="saveNote(\'' + l.id + '\', this.value)">' + esc(l.notes || '') + '</textarea></label>'
       + '<label class="deal">סכום עסקה <input type="number" inputmode="numeric" value="'
       + (Number(l.deal_amount) || '') + '" onchange="saveDeal(\'' + l.id + '\', this.value)"> ₪</label>'
-      + mail + '</div>';
+      + engBlock(l) + unsubBlock(l) + mail + '</div>';
   }
 
   return '<div class="card ' + esc(p.band || 'later') + '">'
@@ -575,6 +596,108 @@ async function patch(id, body, msg){
 function setStatus(id, v){ patch(id, { status:v }, 'הסטטוס עודכן'); }
 function saveNote(id, v){ patch(id, { notes:v }, 'ההערה נשמרה'); }
 function saveDeal(id, v){ patch(id, { deal_amount: Number(v) || 0 }, 'הסכום נשמר'); }
+
+
+/* ── מה הליד עשה בדף ─────────────────────────────────────────
+   pre הוא דף הנחיתה, engage הוא דף התוצאה. שני מספרים על הסרטון
+   במכוון: אחוז הוא הנקודה הרחוקה שאליה הגיע, ושניות הן צפייה
+   אמיתית. מי שגורר את הסרגל לסוף מקבל אחוז גבוה ושניות נמוכות. */
+function mmss(s){
+  s = Math.max(0, Math.round(Number(s) || 0));
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+function vidTxt(e){
+  if(!e || !e.video) return 'לא הפעיל את הסרטון';
+  var p = Number(e.video_pct) || 0;
+  return 'סרטון ' + p + '%' + (e.video_done ? ' עד הסוף' : '')
+       + (e.video_secs ? ' · ' + mmss(e.video_secs) + ' צפייה' : '');
+}
+function engLine(label, e){
+  if(!e || (!e.seconds && !e.video && !e.scroll)) return '';
+  var bits = [vidTxt(e)];
+  if(e.seconds) bits.push(mmss(e.seconds) + ' בדף');
+  if(e.scroll) bits.push('גלילה ' + e.scroll + '%');
+  if(e.booking_click) bits.push('לחץ לתיאום');
+  if(e.asked) bits.push('שלח שאלה');
+  return '<div class="erow"><span class="el">' + label + '</span>'
+    + '<span class="ev">' + esc(bits.join(' · ')) + '</span></div>';
+}
+function engBlock(l){
+  var a = engLine('דף הנחיתה', l.pre);
+  var b = engLine('דף התוצאה', l.engage);
+  if(!a && !b){
+    return '<h4>מה עשה בדף</h4><div class="nodata">עוד לא הגיע דיווח מהדף. '
+      + 'לידים שנקלטו לפני 09/09/2026 לא ידווחו לעולם, כי הדיווח היה שבור.</div>';
+  }
+  return '<h4>מה עשה בדף</h4><div class="eng">' + a + b + '</div>';
+}
+
+/* ── הסרה מדיוור ────────────────────────────────────────── */
+async function setUnsub(id, on){
+  try {
+    await wk('/lead/' + id, { method:'PATCH', body: JSON.stringify({ unsub: !!on }) });
+    await load();
+  } catch(x){ alert('לא נשמר. ' + x.message); }
+}
+function unsubBlock(l){
+  if(l.unsub){
+    return '<div class="unsub on"><b>ביקש להסיר מהדיוור</b>'
+      + '<span>' + esc(new Date(l.unsub.at).toLocaleString('he-IL')) + '. '
+      + 'לא יוצא אליו מייל ולא יוצאת אליו הודעת וואטסאפ. שיחת טלפון אישית מותרת.</span>'
+      + '<button onclick="setUnsub(\'' + l.id + '\', false)">להחזיר לדיוור</button></div>';
+  }
+  return '<div class="unsub"><button onclick="setUnsub(\'' + l.id + '\', true)">'
+    + 'לסמן שביקש הסרה</button></div>';
+}
+
+/* ── פרסום ממומן ─────────────────────────────────────────────
+   חוק ברזל: דשבורד של משפך ממומן מכיר את מזהי הקמפיינים שבנינו לו,
+   ומודד אותם. הטוקן יושב בוורקר בלבד, כי הדף הזה סטטי וגלוי.
+   שתי עלויות במכוון: מה שמטא סופרת, ומה שאנחנו קלטנו בפועל.
+   ההפרש ביניהן הוא מידע, לא תקלה.                              */
+function campLeads(){
+  return LEADS.filter(function(l){ return ((l.utm || {}).campaign || '').trim(); }).length;
+}
+async function metaPanel(){
+  var d = null;
+  try { d = await wk('/meta?range=maximum'); } catch(x){
+    return '<div class="nodata">לא הצלחתי למשוך נתונים ממטא. ' + esc(x.message) + '</div>';
+  }
+  if(d.error || !d.configured){
+    return '<div class="nodata">מזהי הקמפיינים עוד לא הוגדרו למשפך הזה. '
+      + 'בלעדיהם אין עלות לאבחון, וזו חצי תמונה.</div>';
+  }
+  var t = d.total, ours = campLeads();
+  var cpl = ours ? (t.spend / ours) : 0;
+  var rows = d.campaigns.map(function(c){
+    var st = c.status === 'ACTIVE' ? '<span class="on">פעיל</span>'
+           : '<span class="off">' + (c.status === 'PAUSED' ? 'מושהה' : esc(c.status || '·')) + '</span>';
+    return '<tr><td>' + esc(c.name || c.id) + '<br>' + st + '</td>'
+      + '<td>' + money(c.spend) + '</td><td>' + c.impressions.toLocaleString('en-US') + '</td>'
+      + '<td>' + c.clicks + '</td><td>' + c.lpv + '</td></tr>';
+  }).join('');
+  return '<h4 class="ph">פרסום ממומן</h4>'
+    + '<div class="fun" style="margin-bottom:12px">'
+    +   f('הוצאה', money(t.spend))
+    +   f('חשיפות', t.impressions.toLocaleString('en-US'))
+    +   f('אנשים שנחשפו', t.reach.toLocaleString('en-US'))
+    +   f('קליקים', t.clicks + ' (' + t.ctr + '%)')
+    +   f('עלות לקליק', money(t.cpc))
+    +   f('הגיעו לדף', t.lpv)
+    +   f('אבחונים מהקמפיין', ours)
+    +   f('עלות לאבחון', ours ? money(cpl) : 'עוד אין')
+    + '</div>'
+    + '<div class="tw"><table class="adtab"><thead><tr><th>קמפיין</th><th>הוצאה</th>'
+      + '<th>חשיפות</th><th>קליקים</th><th>הגיעו לדף</th></tr></thead>'
+      + '<tbody>' + rows + '</tbody></table></div>'
+    + (t.clicks && t.lpv < t.clicks * 0.75
+        ? '<p class="warn">' + (t.clicks - t.lpv) + ' מתוך ' + t.clicks + ' הקליקים '
+          + 'לא נספרו ככניסה לדף. זה נורמלי בחלקו, אבל פער גדול מעיד על דף שנטען לאט '
+          + 'או על נטישה לפני שהפיקסל הספיק לירות.</p>' : '')
+    + (t.results !== ours
+        ? '<p class="sub" style="margin-top:8px">מטא סופרת ' + t.results + ' המרות ואנחנו קלטנו '
+          + ours + '. פער כזה נורמלי ביומיים הראשונים, כי הייחוס אצלה מתעדכן באיחור.</p>' : '');
+}
 
 /* ── ביצועים ─────────────────────────────────────────────
    מה שגל מחליט לפיו. עלות לפנייה איננה כאן במתכוון: היא המדד שגורם
@@ -668,10 +791,10 @@ async function openPerf(){
         : '<div class="nodata">אין עדיין ליד שהגיע ממודעה. הטבלה הזאת תתמלא '
           + 'מעצמה ברגע שהקמפיין נדלק, שורה לכל מודעה.</div>');
 
+  var meta = await metaPanel();
+
   var body =
-    '<div class="nodata">ההוצאה מפייסבוק עוד לא נמשכת לכאן, ולכן אין עדיין עלות '
-    + 'למפה שהושלמה. הקמפיין בנוי ומושהה, והספירות למטה מתחילות מאפס ומתמלאות '
-    + 'לבד ברגע שהוא נדלק.</div>'
+    meta
     + funnel
     + perAd
     + '<div class="fun" style="margin-top:16px">'
