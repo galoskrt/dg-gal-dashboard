@@ -207,6 +207,10 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .adtab .off{font-size:11.5px;color:#8b8899;font-weight:700}
 .warn{margin-top:9px;font-size:12.5px;color:#a05a12;background:#fff8ec;
   border:1px solid #f3e2c4;border-radius:11px;padding:10px 12px;line-height:1.6}
+
+.steptab td:nth-child(2){width:46%}
+.bar{background:#f1eff6;border-radius:6px;height:10px;overflow:hidden}
+.bar span{display:block;height:100%;background:#ff2d8e;border-radius:6px}
 </style>
 </head>
 <body>
@@ -652,6 +656,102 @@ function unsubBlock(l){
     + 'לסמן שביקש הסרה</button></div>';
 }
 
+
+/* ── פילוח מקור, נטישה לפי שלב, וצפייה ב-VSL ──────────────────────
+   שלושת אלה עונים על שאלה אחת: איפה החיכוך הכי גבוה. בלי פילוח מקור
+   האחוזים מערבבים תנועה ממומנת עם תנועה מהביו באינסטגרם, ובלי נטישה
+   לפי שלב יודעים כמה נטשו ולא איפה.                                 */
+var STEPNAME = ['מאיפה מגיעים הלקוחות'];
+for(var _i=1;_i<=8;_i++) STEPNAME.push('שאלה ' + _i);
+STEPNAME.push('מסך השארת הפרטים');
+
+function sumRich(rich){
+  var t = { view:{paid:0,org:0}, click:{paid:0,org:0}, start:{paid:0,org:0},
+            steps:{}, contact:0,
+            vsl:{played:0,p25:0,p50:0,p75:0,p95:0,serious:0,skim:0,dragged:0,secs:0,len:0,n:0} };
+  (rich||[]).forEach(function(d){
+    ['view','click','start'].forEach(function(k){
+      t[k].paid += ((d[k]||{}).paid)||0; t[k].org += ((d[k]||{}).org)||0; });
+    for(var s in (d.steps||{})) t.steps[s] = (t.steps[s]||0) + d.steps[s];
+    t.contact += d.contact||0;
+    for(var v in t.vsl) if(v!=='len') t.vsl[v] += ((d.vsl||{})[v])||0;
+    if((d.vsl||{}).len) t.vsl.len = d.vsl.len;
+  });
+  return t;
+}
+
+function srcRow(label, o){
+  var tot = o.paid + o.org;
+  return '<tr><td>' + label + '</td><td>' + o.paid + '</td><td>' + o.org
+    + '</td><td><b>' + tot + '</b></td></tr>';
+}
+
+function richPanel(rich, doneByDate){
+  var t = sumRich(rich);
+  var anySrc = t.view.paid + t.view.org;
+  var out = '';
+
+  if(anySrc){
+    out += '<h4 class="ph">ממומן מול אורגני</h4>'
+      + '<div class="tw"><table class="adtab"><thead><tr><th>שלב</th><th>ממומן</th>'
+      + '<th>אורגני</th><th>סהכ</th></tr></thead><tbody>'
+      + srcRow('כניסות לדף', t.view)
+      + srcRow('עברו לשאלון', t.click)
+      + srcRow('התחילו לענות', t.start)
+      + '</tbody></table></div>'
+      + '<p class="sub" style="margin-top:8px">ממומן נקבע לפי fbclid או utm שהגיעו בכתובת, '
+      + 'ונשמר שלושים יום. כל השאר אורגני: ביו באינסטגרם, וואטסאפ, סטורי, או כניסה ישירה.</p>';
+  }
+
+  /* ── נטישה לפי שלב ── */
+  var steps = t.steps, tot = 0;
+  for(var k in steps) tot += steps[k];
+  if(tot){
+    var maxv = 0;
+    for(var k2 in steps) if(steps[k2] > maxv) maxv = steps[k2];
+    var rows = '';
+    for(var i = 0; i <= 9; i++){
+      var n = steps[String(i)] || 0;
+      if(!n) continue;
+      var w = maxv ? Math.round(n / maxv * 100) : 0;
+      rows += '<tr><td>' + esc(STEPNAME[i] || ('שלב ' + i)) + '</td>'
+        + '<td><div class="bar"><span style="width:' + w + '%"></span></div></td>'
+        + '<td><b>' + n + '</b> <span class="pc">' + Math.round(n/tot*100) + '%</span></td></tr>';
+    }
+    out += '<h4 class="ph">איפה נוטשים את השאלון</h4>'
+      + '<div class="tw"><table class="adtab steptab"><tbody>' + rows + '</tbody></table></div>'
+      + '<p class="sub" style="margin-top:8px">כל נוטש נספר פעם אחת, בשלב הרחוק ביותר שאליו הגיע. '
+      + 'השורה הגבוהה ביותר היא המקום שבו כדאי להוריד חיכוך.</p>';
+  }
+
+  /* ── הסרטון ── */
+  var v = t.vsl;
+  if(v.played){
+    var q = function(a,b){ return b ? Math.round(a/b*100)+'%' : '·'; };
+    out += '<h4 class="ph">הסרטון בדף הבית</h4>'
+      + '<div class="fun" style="margin-bottom:10px">'
+      +   f('הפעילו', v.played)
+      +   f('עברו רבע', v.p25 + ' (' + q(v.p25,v.played) + ')')
+      +   f('עברו חצי', v.p50 + ' (' + q(v.p50,v.played) + ')')
+      +   f('עברו שלושה רבעים', v.p75 + ' (' + q(v.p75,v.played) + ')')
+      +   f('ראו עד הסוף', v.p95 + ' (' + q(v.p95,v.played) + ')')
+      +   f('אורך הסרטון', v.len ? Math.floor(v.len/60)+':'+('0'+Math.round(v.len%60)).slice(-2) : '·')
+      + '</div>'
+      + '<div class="tw"><table class="adtab"><thead><tr><th>איך צפו</th><th>כמה</th>'
+      + '<th>מתוך המפעילים</th></tr></thead><tbody>'
+      + '<tr><td>צפו ברצינות</td><td>' + v.serious + '</td><td>' + q(v.serious,v.played) + '</td></tr>'
+      + '<tr><td>גררו את הסרגל</td><td>' + v.dragged + '</td><td>' + q(v.dragged,v.played) + '</td></tr>'
+      + '<tr><td>רפרפו ועזבו</td><td>' + v.skim + '</td><td>' + q(v.skim,v.played) + '</td></tr>'
+      + '</tbody></table></div>'
+      + '<p class="sub" style="margin-top:8px">רצינות נמדדת ביחס בין זמן הצפייה שנצבר למקום שאליו '
+      + 'הגיעו בסרגל. מי שגרר קדימה מגיע רחוק בלי לצפות, וזה נראה כאן בנפרד.</p>';
+  } else {
+    out += '<h4 class="ph">הסרטון בדף הבית</h4><div class="nodata">עוד לא נמדדה צפייה. '
+      + 'המדידה נוספה ב-09/09/2026 ומתמלאת מהמבקר הבא, גם אם הוא לא השאיר פרטים.</div>';
+  }
+  return out;
+}
+
 /* ── פרסום ממומן ─────────────────────────────────────────────
    חוק ברזל: דשבורד של משפך ממומן מכיר את מזהי הקמפיינים שבנינו לו,
    ומודד אותם. הטוקן יושב בוורקר בלבד, כי הדף הזה סטטי וגלוי.
@@ -725,6 +825,7 @@ function pct(a, b){ return b ? Math.round(a / b * 100) + '%' : '·'; }
 async function funnelPanel(){
   var stats = null;
   try { stats = await wk('/funnel-stats?days=14'); } catch(x){ return ''; }
+  var rich = richPanel(stats && stats.rich);
   var days = (stats && stats.days) || [];
   var done = completionsByDate();
   var tv=0, tc=0, ts=0, td=0;
@@ -750,7 +851,7 @@ async function funnelPanel(){
             + '<tbody>' + rows + '</tbody></table></div>'
           + '<p class="sub" style="margin-top:8px">אם יש הרבה כניסות ומעט מעברים לשאלון, '
             + 'הבעיה כנראה בדף. אם יש הרבה שהתחילו ומעט שסיימו, הבעיה כנראה בשאלון עצמו.</p>'
-        : '<div class="nodata">אין עדיין נתונים. הטבלה הזאת מתמלאת לבד מרגע שמישהו נכנס לדף.</div>');
+        : '<div class="nodata">אין עדיין נתונים. הטבלה הזאת מתמלאת לבד מרגע שמישהו נכנס לדף.</div>') + rich;
 }
 
 async function openPerf(){
