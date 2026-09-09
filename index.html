@@ -213,6 +213,7 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .bar span{display:block;height:100%;background:#ff2d8e;border-radius:6px}
 .chip.paidchip{background:#fff4ec;color:#a05a12;border-color:#f3e2c4}
 .chip.demochip{background:#eef1f7;color:#5a6b8c;border-color:#d7deea}
+.chip.nowachip{background:#fff0f0;color:#b3261e;border-color:#f5c6c2}
 </style>
 </head>
 <body>
@@ -541,6 +542,10 @@ function card(l){
   /* ממומן או אורגני. בלי זה אי אפשר לדעת אילו לידים באמת עלו כסף. */
   if(l.src === 'paid') chips += '<span class="chip paidchip">ממומן</span>';
   else if(l.src === 'org') chips += '<span class="chip">אורגני</span>';
+  /* מספר שאינו קיים בוואטסאפ. מוצג בראש הכרטיס כי זה משנה איך
+     פונים אליו, ואין טעם לגלות את זה רק כשמנסים לכתוב. */
+  if(l.wa_exists && l.wa_exists.ok === false)
+    chips += '<span class="chip nowachip">אין וואטסאפ למספר</span>';
   if(l.demo) chips += '<span class="chip demochip">ליד בדיקה</span>';
   if(l.unsub) chips += '<span class="chip unschip">ביקש הסרה</span>';
 
@@ -581,7 +586,9 @@ function card(l){
     + '</div>' + q + meetPanel(l)
     + '<div class="row" onclick="event.stopPropagation()">'
     +   (l.phone ? '<a class="btn call" href="tel:' + esc(l.phone) + '">' + esc(l.phone) + '</a>' : '')
-    +   (l.phone ? '<a class="btn wa" href="' + wa(l.phone) + '" target="_blank" rel="noopener">וואטסאפ</a>' : '')
+    +   (l.phone && !(l.wa_exists && l.wa_exists.ok === false)
+          ? '<a class="btn wa" href="' + wa(l.phone) + '" target="_blank" rel="noopener">וואטסאפ</a>'
+          : '')
     +   '<select onchange="setStatus(\'' + l.id + '\', this.value)">' + opts + '</select>'
     +   '<button class="btn more" onclick="toggle(\'' + l.id + '\')">'
     +     (open ? 'סגור' : 'מה הם ענו') + '</button>'
