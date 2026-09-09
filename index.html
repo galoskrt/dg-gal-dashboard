@@ -363,6 +363,15 @@ function toast(m){
   t.textContent = m; t.classList.add('on');
   clearTimeout(t._x); t._x = setTimeout(function(){ t.classList.remove('on'); }, 2200);
 }
+/* שעון ישראל תמיד ומפורשות, ולא שעון המכשיר. אחרת אותה רשומה מציגה
+   שעה אחרת כשפותחים את הדשבורד מחו"ל, ואי אפשר להצליב מול המייל. */
+function ilTime(iso){
+  if(!iso) return '';
+  var d = new Date(iso);
+  if(isNaN(d)) return '';
+  return d.toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit',
+                                         timeZone:'Asia/Jerusalem' });
+}
 function ago(iso){
   if(!iso) return '';
   var m = Math.round((Date.now() - new Date(iso)) / 60000);
@@ -565,7 +574,8 @@ function card(l){
     +     (l.business ? '<span class="cbiz">' + esc(l.business) + '</span>' : '') + '</div>'
     +     '<div class="chips">' + chips + '</div></div>'
     +   '<div class="cright"><div class="csum">' + money(m.main) + '</div>'
-    +     '<div class="cago">' + esc(ago(l.created_at)) + '</div></div>'
+    +     '<div class="cago">' + esc(ago(l.created_at))
+    +       (ilTime(l.created_at) ? ' · ' + ilTime(l.created_at) : '') + '</div></div>'
     + '</div>' + q + meetPanel(l)
     + '<div class="row" onclick="event.stopPropagation()">'
     +   (l.phone ? '<a class="btn call" href="tel:' + esc(l.phone) + '">' + esc(l.phone) + '</a>' : '')
