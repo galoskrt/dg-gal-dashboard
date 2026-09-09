@@ -210,6 +210,7 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .bar{background:#f1eff6;border-radius:6px;height:10px;overflow:hidden}
 .bar span{display:block;height:100%;background:#ff2d8e;border-radius:6px}
 .chip.paidchip{background:#fff4ec;color:#a05a12;border-color:#f3e2c4}
+.chip.demochip{background:#eef1f7;color:#5a6b8c;border-color:#d7deea}
 </style>
 </head>
 <body>
@@ -538,6 +539,7 @@ function card(l){
   /* ממומן או אורגני. בלי זה אי אפשר לדעת אילו לידים באמת עלו כסף. */
   if(l.src === 'paid') chips += '<span class="chip paidchip">ממומן</span>';
   else if(l.src === 'org') chips += '<span class="chip">אורגני</span>';
+  if(l.demo) chips += '<span class="chip demochip">ליד בדיקה</span>';
   if(l.unsub) chips += '<span class="chip unschip">ביקש הסרה</span>';
 
   var q = l.question
@@ -782,7 +784,7 @@ function richPanel(rich, doneByDate){
    שתי עלויות במכוון: מה שמטא סופרת, ומה שאנחנו קלטנו בפועל.
    ההפרש ביניהן הוא מידע, לא תקלה.                              */
 function campLeads(){
-  return LEADS.filter(function(l){ return ((l.utm || {}).campaign || '').trim(); }).length;
+  return realLeads().filter(function(l){ return ((l.utm || {}).campaign || '').trim(); }).length;
 }
 async function metaPanel(){
   var d = null;
@@ -878,21 +880,25 @@ async function funnelPanel(){
         : '<div class="nodata">אין עדיין נתונים. הטבלה הזאת מתמלאת לבד מרגע שמישהו נכנס לדף.</div>') + rich;
 }
 
+/* לידי בדיקה נשארים ברשימה כדי שאפשר יהיה לראות אותם, אבל הם לא
+   נספרים באף מדד. אחרת פגישה שנקבעה בבדיקה נראית כמו שיחה אמיתית. */
+function realLeads(){ return LEADS.filter(function(l){ return !l.demo; }); }
+
 async function openPerf(){
   var funnel = await funnelPanel();
-  var n = LEADS.length;
-  var booked = LEADS.filter(function(l){ return reached(l, 'booked', BOOKED); }).length;
-  var held = LEADS.filter(function(l){ return reached(l, 'held', HELD); }).length;
-  var noshow = LEADS.filter(function(l){ return reached(l, 'noshow', ['meeting_noshow']); }).length;
-  var won = LEADS.filter(function(l){ return reached(l, 'won', ['meeting_won']); }).length;
-  var rev = LEADS.reduce(function(s, l){ return s + (Number(l.deal_amount) || 0); }, 0);
+  var n = realLeads().length;
+  var booked = realLeads().filter(function(l){ return reached(l, 'booked', BOOKED); }).length;
+  var held = realLeads().filter(function(l){ return reached(l, 'held', HELD); }).length;
+  var noshow = realLeads().filter(function(l){ return reached(l, 'noshow', ['meeting_noshow']); }).length;
+  var won = realLeads().filter(function(l){ return reached(l, 'won', ['meeting_won']); }).length;
+  var rev = realLeads().reduce(function(s, l){ return s + (Number(l.deal_amount) || 0); }, 0);
 
   /* ── פילוח לפי מודעה ─────────────────────────────────────────
      המדד של מסמך 09 הוא עלות למפה שהושלמה, ולכן הספירה כאן היא לפי
      מודעה ולא לפי קמפיין. הטבלה נבנית מהמודעות שבאמת הגיעו לידים
      מהן, ולכן היא מתחילה ריקה ומתמלאת מעצמה ברגע שהקמפיין נדלק. */
   var byAd = {};
-  LEADS.forEach(function(l){
+  realLeads().forEach(function(l){
     var k = adName(l);
     if(!byAd[k]) byAd[k] = { maps:0, booked:0, held:0, won:0, rev:0 };
     var r = byAd[k];
@@ -902,7 +908,12 @@ async function openPerf(){
     if(reached(l, 'won', ['meeting_won'])) r.won++;
     r.rev += Number(l.deal_amount) || 0;
   });
-  var order = Object.keys(ADS).map(function(k){ return ADS[k]; }).concat([NO_AD]);
+  /* .name ולא האובייקט. byAd ממופתח בשם המודעה בעברית, וההשוואה מול
+     האובייקט לעולם לא התאימה, ולכן כל ליד שהגיע ממודעה נשר מהטבלה
+     ורק "לא ממודעה" שרד. נצפה בפועל: מור ואלי לא הופיעו כלל. */
+  var order = Object.keys(ADS).map(function(k){ return ADS[k].name; }).concat([NO_AD]);
+  /* מודעה שהביאה ליד אבל אינה במפה עדיין, כדי ששום ליד לא ייעלם. */
+  Object.keys(byAd).forEach(function(k){ if(order.indexOf(k) < 0) order.push(k); });
   var rows = order.filter(function(k){ return byAd[k]; }).map(function(k){
     var r = byAd[k];
     return '<tr><td>' + esc(k) + '</td><td>' + r.maps + '</td><td>' + r.booked
