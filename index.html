@@ -214,6 +214,7 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .chip.paidchip{background:#fff4ec;color:#a05a12;border-color:#f3e2c4}
 .chip.demochip{background:#eef1f7;color:#5a6b8c;border-color:#d7deea}
 .chip.nowachip{background:#fff0f0;color:#b3261e;border-color:#f5c6c2}
+.chip.srcchip{background:#f4f2f8;color:#5a5470;border-color:#e4e0ee}
 </style>
 </head>
 <body>
@@ -534,7 +535,11 @@ function card(l){
   var chips = '';
   if(AWARE[m.awareness]) chips += '<span class="chip aw-' + m.awareness + '">' + AWARE[m.awareness] + '</span>';
   if(TEMP[m.temp]) chips += '<span class="chip tp-' + m.temp + '">' + TEMP[m.temp] + '</span>';
-  if(SRC[m.source]) chips += '<span class="chip">' + SRC[m.source] + '</span>';
+  /* זו תשובת השאלון על מקור הלקוחות של העסק שלו, לא איך הוא הגיע
+     לדף שלנו. בלי התחילית הזו זה קורא כמו תיוג ממומן/אורגני של הליד
+     עצמו ומתנגש בעין מול תגית "ממומן"/"אורגני" למטה, שמודדת דבר אחר
+     לגמרי: הקלקה על מודעה שלנו. */
+  if(SRC[m.source]) chips += '<span class="chip srcchip">אצלו: ' + SRC[m.source] + '</span>';
   /* מאיזו מודעה הוא הגיע. מוצג רק כשיש תיוג, כדי שלידים אורגניים
      לא ייראו כאילו משהו נכשל. */
   if(adKey(l)) chips += '<span class="chip adchip">' + esc(adName(l)) + '</span>';
