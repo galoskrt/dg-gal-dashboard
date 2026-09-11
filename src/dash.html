@@ -562,7 +562,16 @@ function card(l){
       var t = (x && typeof x === 'object') ? (x.t || '') : String(x || '');
       return '<li>' + (h ? '<b>' + esc(h) + '</b>' : '') + '<span>' + esc(t) + '</span></li>';
     }).join('');
-    var ans = (m.answers || []).map(function(a){
+    /* שאלה 1 (מקור הלקוחות שלו) נחתה ב-map.answers רק החל מ-11/09/2026.
+       לידים ישנים יותר לא כוללים אותה שם, אבל היא כן שמורה ב-full.answers.source
+       על כל ליד. משחזרים אותה כאן כדי שאף ליד לא יראה בלי שורה ראשונה,
+       בלי תלות במתי הוא נכנס. הטקסט חייב להישאר זהה ל-Q1.q ב-survey.html. */
+    var srcAns = ((l.full || {}).answers || {}).source;
+    var answers = m.answers || [];
+    if(srcAns && srcAns.label && !answers.some(function(a){ return a.q === 'היום, מאיפה מגיעים רוב הלקוחות החדשים שלך?'; })){
+      answers = [{ q: 'היום, מאיפה מגיעים רוב הלקוחות החדשים שלך?', a: srcAns.label }].concat(answers);
+    }
+    var ans = answers.map(function(a){
       return '<div class="arow"><span class="aq">' + esc(a.q) + '</span>'
         + '<span class="aa">' + esc(a.a) + '</span></div>'; }).join('');
     var mail = '<div class="mail"><span class="' + ((l.map_mail || {}).id ? 'ok' : 'no') + '">מפה במייל</span>'
