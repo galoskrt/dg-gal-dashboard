@@ -213,6 +213,78 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .chip.demochip{background:#eef1f7;color:#5a6b8c;border-color:#d7deea}
 .chip.nowachip{background:#fff0f0;color:#b3261e;border-color:#f5c6c2}
 .chip.srcchip{background:#f4f2f8;color:#5a5470;border-color:#e4e0ee}
+
+/* ── לשוניות ───────────────────────────────────────────── */
+.tabs{display:flex;gap:6px;max-width:640px;margin:10px auto 0}
+.tabs button{flex:1 1 0;background:#fff;border:1px solid var(--line2);border-radius:11px;
+  padding:9px 10px;font-size:13.5px;font-weight:800;color:var(--mut);cursor:pointer}
+.tabs button.on{background:var(--txt);border-color:var(--txt);color:#fff}
+
+/* ── קבוצות פייסבוק ────────────────────────────────────── */
+.fbcat{margin-bottom:24px}
+.fbcat>h2{margin:0 0 10px;font-size:17px;font-weight:800;display:flex;gap:9px;align-items:baseline}
+.fbcat>h2 .n{font-size:12.5px;font-weight:800;color:#fff;background:var(--mut2);border-radius:9px;padding:2px 9px}
+.fg{background:var(--card);border:1px solid var(--line2);border-right:3px solid var(--line2);
+  border-radius:18px 18px 18px 5px;padding:13px 15px;margin-bottom:10px;box-shadow:var(--sh1);min-width:0}
+.fg.st-pending{border-right-color:var(--orange)}
+.fg.st-live{border-right-color:var(--greenS)}
+.fg.st-rejected{border-right-color:var(--pinkS)}
+.fgh{display:flex;gap:10px;align-items:flex-start;cursor:pointer;min-width:0}
+.fgn{flex:1 1 auto;min-width:0;font-size:15.5px;font-weight:800;line-height:1.35;overflow-wrap:anywhere}
+.fgs{flex:0 0 auto;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:8px;white-space:nowrap;
+  background:#f4f2f8;color:var(--mut2)}
+.fgs.st-pending{background:var(--orangeT);color:var(--orangeS)}
+.fgs.st-live{background:var(--greenT);color:var(--greenS)}
+.fgs.st-rejected{background:var(--pinkT);color:var(--pinkS)}
+.fgm{margin-top:5px;font-size:12px;color:var(--mut2);display:flex;flex-wrap:wrap;gap:4px 10px}
+.fgm b{color:var(--txt);font-weight:800}
+.fgb{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);min-width:0}
+.fgb h4{margin:14px 0 8px;font-size:13px;font-weight:800}
+.fgb h4:first-child{margin-top:0}
+.vpick{display:flex;flex-wrap:wrap;gap:6px}
+.vpick button{background:#fff;border:1px solid var(--line2);border-radius:10px;padding:7px 11px;
+  font-size:12.5px;font-weight:800;color:var(--mut);cursor:pointer}
+.vpick button.on{background:var(--pink);border-color:var(--pink);color:#fff}
+.vpick button.used{text-decoration:line-through;opacity:.55}
+.vsug{font-size:11.5px;color:var(--greenS);font-weight:800;margin-top:6px}
+.vprev{margin-top:8px;background:#faf9fd;border:1px solid var(--line);border-radius:12px;padding:10px 12px;
+  font-size:13px;line-height:1.6;white-space:pre-wrap;max-height:150px;overflow:auto;color:var(--mut)}
+.fbtn{display:inline-block;font-size:13.5px;font-weight:800;padding:10px 14px;border-radius:11px;
+  text-decoration:none;border:1px solid var(--line2);background:#fff;color:var(--txt);cursor:pointer;white-space:nowrap}
+.fbtn.go{background:var(--pink);border-color:var(--pink);color:#fff;flex:1 1 auto;text-align:center}
+.fbtn.ok{background:var(--greenS);border-color:var(--greenS);color:#fff}
+.fbtn.sm{font-size:12px;padding:6px 10px}
+.fbrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.ask{margin-top:10px;background:var(--greenT);border:1px solid var(--greenL);border-radius:13px;padding:11px 13px}
+.ask p{margin:0 0 8px;font-size:13px;font-weight:800;color:var(--greenS)}
+.post{background:#faf9fd;border:1px solid var(--line);border-radius:13px;padding:10px 12px;margin-bottom:9px}
+.ptop{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:12.5px}
+.ptop b{font-weight:800}
+.ptop select{font-size:12.5px;font-weight:700;padding:6px 9px;border-radius:9px;border:1px solid var(--line2);background:#fff}
+.ptop .del{margin-right:auto;background:none;border:0;color:var(--mut2);font-size:12px;cursor:pointer;text-decoration:underline}
+.cms{margin-top:9px;display:grid;gap:6px}
+.cm{display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:#fff;border:1px solid var(--line);
+  border-radius:10px;padding:7px 9px;font-size:13px}
+.cm .nm{flex:1 1 90px;min-width:0;font-weight:800;overflow-wrap:anywhere}
+.tg{font-size:11.5px;font-weight:800;padding:5px 9px;border-radius:8px;border:1px solid var(--line2);
+  background:#fff;color:var(--mut2);cursor:pointer}
+.tg.on{background:var(--greenT);border-color:var(--greenL);color:var(--greenS)}
+.cm .x{background:none;border:0;color:var(--mut2);cursor:pointer;font-size:14px;padding:2px 4px}
+.cadd{display:flex;gap:6px;margin-top:8px}
+.cadd input,.urlrow input,.gadd input,.gadd select{flex:1 1 auto;min-width:0;padding:9px 11px;border:1px solid var(--line2);
+  border-radius:10px;font-size:13.5px;background:#fff;color:var(--txt)}
+.urlrow{display:flex;gap:6px;margin-top:6px}
+.urlrow input{direction:ltr;text-align:left}
+.gadd{display:grid;gap:7px;background:#fff;border:1px dashed var(--line2);border-radius:15px;padding:13px;margin-top:6px}
+.vedit textarea{width:100%;min-height:220px;padding:10px 12px;border:1px solid var(--line2);border-radius:11px;
+  font-size:13.5px;line-height:1.6;resize:vertical;background:#fff;color:var(--txt)}
+.vcard{background:#fff;border:1px solid var(--line2);border-radius:15px;padding:12px 13px;margin-bottom:9px}
+.vcard>b{font-size:14px}
+.fbsec{margin-top:6px}
+.fbsec>summary{cursor:pointer;font-size:15px;font-weight:800;padding:10px 0;list-style:none}
+.fbsec>summary::-webkit-details-marker{display:none}
+.fbsec>summary:before{content:'+ ';color:var(--pink)}
+.fbsec[open]>summary:before{content:'- '}
 </style>
 </head>
 <body>
@@ -233,13 +305,18 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
   <header>
     <div class="htop">
       <span class="b">דיוק דיגיטלי</span>
-      <button onclick="openPerf()">ביצועים</button>
-      <button onclick="refresh()" id="rbtn">רענון</button>
+      <button onclick="openPerf()" id="pbtn">ביצועים</button>
+      <button onclick="refreshTab()" id="rbtn">רענון</button>
       <button onclick="logout()">יציאה</button>
+    </div>
+    <div class="tabs">
+      <button id="tab-leads" class="on" onclick="showTab('leads')">לידים</button>
+      <button id="tab-fb" onclick="showTab('fb')">קבוצות פייסבוק</button>
     </div>
     <div class="stats" id="stats"></div>
   </header>
   <main id="list"></main>
+  <main id="fb" class="hidden"></main>
   <p class="cr">© כל הזכויות שמורות · דיוק דיגיטלי · גל הרוש 2026</p>
 </div>
 
@@ -441,6 +518,7 @@ async function doLogin(e){
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
     await refresh();
+    restoreTab();
   } catch(x){
     KEY = null;
     err.textContent = x.message === 'unauthorized' ? 'סיסמה שגויה' : 'לא הצלחתי להתחבר. נסה שוב.';
@@ -473,6 +551,7 @@ var BOOKED = ['meeting_set','meeting_attended','meeting_noshow','meeting_won'];
 var HELD = ['meeting_attended','meeting_won'];
 
 function renderStats(){
+  if(TAB === 'fb') return;   /* בלשונית הקבוצות שורת המספרים שייכת להן */
   var n = LEADS.length;
   var hot = LEADS.filter(function(l){ return (l.priority || {}).band === 'now'; }).length;
   var booked = LEADS.filter(function(l){ return reached(l, 'booked', BOOKED); }).length;
@@ -985,6 +1064,306 @@ function f(label, v){
   return '<div class="f"><span>' + label + '</span><b>' + v + '</b></div>';
 }
 
+/* ============================================================
+   קבוצות פייסבוק · ניהול הפרסום לקהילה
+
+   מחליף את הדוקס הידני של גל: לכל קבוצה איזה נוסח נשלח, באיזה סטטוס,
+   ומי הגיב "אשמח". הכל יושב בוורקר (/fb), ולכן הנייד והמחשב רואים את
+   אותו מצב. כל הכפתורים עוברים דרך data-act ומאזין אחד, בלי כתובות
+   בתוך onclick (מלכודת שכבר שברה את הדף פעם אחת).
+   ============================================================ */
+var TAB = 'leads';
+var FB = null;
+var FBOPEN = {}, FBPICK = {}, FBASK = {};
+var CATS = [['realestate','מתווכי נדל"ן'], ['law','עורכי דין'],
+  ['finance','יועצי משכנתאות ופיננסים'], ['investors','משקיעים ומלווי השקעות'], ['other','קבוצות נוספות']];
+var PST = { pending:'ממתין לאישור', live:'באוויר', rejected:'נדחה או נמחק' };
+
+function showTab(t){
+  TAB = t;
+  document.getElementById('tab-leads').classList.toggle('on', t === 'leads');
+  document.getElementById('tab-fb').classList.toggle('on', t === 'fb');
+  document.getElementById('list').classList.toggle('hidden', t !== 'leads');
+  document.getElementById('fb').classList.toggle('hidden', t !== 'fb');
+  document.getElementById('pbtn').classList.toggle('hidden', t !== 'leads');
+  try { sessionStorage.setItem('dg_tab', t); } catch(x){}
+  if(t === 'fb'){ if(FB) fbRender(); fbLoad(false, !!FB); }
+  else renderStats();
+}
+function restoreTab(){
+  var t = null;
+  try { t = sessionStorage.getItem('dg_tab'); } catch(x){}
+  if(t === 'fb') showTab('fb');
+}
+function refreshTab(){ return TAB === 'fb' ? fbLoad(true) : refresh(); }
+
+async function fbLoad(withBtn, silent){
+  var b = document.getElementById('rbtn');
+  if(withBtn){ b.disabled = true; b.textContent = 'טוען...'; }
+  try {
+    var r = await wk('/fb');
+    var changed = !FB || !r.state || r.state.updated_at !== FB.updated_at;
+    FB = r.state;
+    if(!silent || changed) fbRender();
+  } catch(x){ if(!silent) toast(x.message); }
+  if(withBtn){ b.disabled = false; b.textContent = 'רענון'; }
+}
+async function fbDo(op, msg){
+  try {
+    var r = await wk('/fb/op', { method:'POST', body: JSON.stringify(op) });
+    FB = r.state; fbRender();
+    if(msg) toast(msg);
+  } catch(x){ toast('לא נשמר. ' + x.message); }
+}
+
+function fbPosts(gid){
+  return FB.posts.filter(function(p){ return p.group === gid; })
+    .sort(function(a, b){ return a.at < b.at ? 1 : -1; });
+}
+function fbVar(id){ return FB.variants.filter(function(v){ return v.id === id; })[0] || { id:id, title:'', text:'' }; }
+
+/* ההצעה: נוסח שעוד לא נשלח לקבוצה הזו, ומתוכם זה שהכי פחות בשימוש
+   היום ואז בכלל, כדי שאותו טקסט לא ירוץ בכמה קבוצות באותו יום. */
+function fbSuggest(gid){
+  var here = {}, today = {}, all = {}, day = ilDate();
+  fbPosts(gid).forEach(function(p){ here[p.variant] = 1; });
+  FB.posts.forEach(function(p){
+    all[p.variant] = (all[p.variant] || 0) + 1;
+    if(ilDate(new Date(p.at)) === day) today[p.variant] = (today[p.variant] || 0) + 1;
+  });
+  return FB.variants.map(function(v){ return v.id; }).sort(function(a, b){
+    return ((here[a] || 0) - (here[b] || 0)) || ((today[a] || 0) - (today[b] || 0))
+      || ((all[a] || 0) - (all[b] || 0)) || (a < b ? -1 : 1);
+  })[0];
+}
+
+function fbCopy(text){
+  var done = false;
+  try {
+    var t = document.createElement('textarea');
+    t.value = text; t.setAttribute('readonly', '');
+    t.style.position = 'fixed'; t.style.top = '-1000px'; t.style.opacity = '0';
+    document.body.appendChild(t);
+    t.focus(); t.select(); t.setSelectionRange(0, text.length);
+    done = document.execCommand('copy');
+    document.body.removeChild(t);
+  } catch(x){}
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).catch(function(){});
+    done = true;
+  }
+  return done;
+}
+
+function fbStats(){
+  var groups = FB.groups.length, posted = {}, n = { pending:0, live:0, rejected:0 };
+  var cms = 0, sent = 0, joined = 0, today = 0, day = ilDate();
+  FB.posts.forEach(function(p){
+    posted[p.group] = 1;
+    n[p.status] = (n[p.status] || 0) + 1;
+    if(ilDate(new Date(p.at)) === day) today++;
+    (p.commenters || []).forEach(function(c){ cms++; if(c.sent) sent++; if(c.joined) joined++; });
+  });
+  document.getElementById('stats').innerHTML =
+      '<span>קבוצות שפורסמו <b>' + Object.keys(posted).length + '/' + groups + '</b></span>'
+    + '<span>היום <b>' + today + '</b></span>'
+    + '<span>ממתינים לאישור <b>' + n.pending + '</b></span>'
+    + '<span>באוויר <b>' + n.live + '</b></span>'
+    + '<span>הגיבו "אשמח" <b>' + cms + '</b></span>'
+    + '<span>נשלח קישור <b>' + sent + '</b></span>'
+    + '<span>הצטרפו <b>' + joined + '</b></span>';
+}
+
+function fbPostHtml(p){
+  var v = fbVar(p.variant);
+  var opts = Object.keys(PST).map(function(k){
+    return '<option value="' + k + '"' + (p.status === k ? ' selected' : '') + '>' + PST[k] + '</option>'; }).join('');
+  var cms = (p.commenters || []).map(function(c){
+    return '<div class="cm"><span class="nm">' + esc(c.name || 'בלי שם') + '</span>'
+      + '<button class="tg' + (c.sent ? ' on' : '') + '" data-act="c-sent" data-p="' + p.id + '" data-c="' + c.id + '">'
+      + (c.sent ? 'נשלח קישור' : 'לשלוח קישור') + '</button>'
+      + '<button class="tg' + (c.joined ? ' on' : '') + '" data-act="c-joined" data-p="' + p.id + '" data-c="' + c.id + '">'
+      + (c.joined ? 'הצטרף' : 'הצטרף?') + '</button>'
+      + '<button class="x" data-act="c-del" data-p="' + p.id + '" data-c="' + c.id + '" title="מחיקה">×</button></div>';
+  }).join('');
+  return '<div class="post">'
+    + '<div class="ptop"><b>נוסח ' + esc(p.variant) + '</b><span>' + esc(v.title) + '</span>'
+    +   '<span>' + esc(ago(p.at)) + '</span>'
+    +   '<select data-act="p-status" data-p="' + p.id + '">' + opts + '</select>'
+    +   '<button class="del" data-act="p-del" data-p="' + p.id + '">מחיקת הפרסום</button></div>'
+    + '<div class="cms">' + cms + '</div>'
+    + '<div class="cadd"><input placeholder="שם מי שהגיב אשמח" data-in="c-name" data-p="' + p.id + '">'
+    +   '<button class="fbtn sm" data-act="c-add" data-p="' + p.id + '">הוספה</button></div>'
+    + '</div>';
+}
+
+function fbGroupHtml(g){
+  var ps = fbPosts(g.id), lp = ps[0], st = lp ? lp.status : 'none', open = !!FBOPEN[g.id];
+  var cms = 0, joined = 0;
+  ps.forEach(function(p){ (p.commenters || []).forEach(function(c){ cms++; if(c.joined) joined++; }); });
+  var meta = lp
+    ? '<b>נוסח ' + esc(lp.variant) + '</b><span>' + esc(ago(lp.at)) + '</span>'
+      + (ps.length > 1 ? '<span>' + ps.length + ' פרסומים</span>' : '')
+      + '<span>' + cms + ' הגיבו</span>' + (joined ? '<span>' + joined + ' הצטרפו</span>' : '')
+    : '<span>עוד לא פורסם כאן</span>';
+  var body = '';
+  if(open){
+    var sug = fbSuggest(g.id), pick = FBPICK[g.id] || sug, used = {};
+    ps.forEach(function(p){ used[p.variant] = 1; });
+    var picks = FB.variants.map(function(v){
+      return '<button class="' + (v.id === pick ? 'on' : '') + (used[v.id] ? ' used' : '') + '" data-act="pick" data-g="' + g.id + '" data-v="' + v.id + '">'
+        + esc(v.id) + ' · ' + esc(v.title) + '</button>'; }).join('');
+    var go = g.url
+      ? '<a class="fbtn go" href="' + esc(g.url) + '" target="_blank" rel="noopener" data-act="copy-go" data-g="' + g.id + '">העתק נוסח ופתח את הקבוצה</a>'
+      : '<button class="fbtn go" data-act="copy-go" data-g="' + g.id + '">העתק נוסח</button>';
+    var ask = FBASK[g.id]
+      ? '<div class="ask"><p>פרסמת בקבוצה?</p><div class="fbrow" style="margin-top:0">'
+        + '<button class="fbtn ok" data-act="posted" data-g="' + g.id + '" data-s="pending">כן, ממתין לאישור</button>'
+        + '<button class="fbtn" data-act="posted" data-g="' + g.id + '" data-s="live">כן, עלה ישר</button>'
+        + '<button class="fbtn" data-act="not-posted" data-g="' + g.id + '">לא</button></div></div>'
+      : '';
+    body = '<div class="fgb">'
+      + '<h4>קישור לקבוצה</h4>'
+      + '<div class="urlrow"><input placeholder="https://www.facebook.com/groups/..." value="' + esc(g.url) + '" data-in="url" data-g="' + g.id + '">'
+      +   '<button class="fbtn sm" data-act="url" data-g="' + g.id + '">שמירה</button></div>'
+      + '<h4>' + (ps.length ? 'פרסום חוזר' : 'פרסום') + '</h4>'
+      + '<div class="vpick">' + picks + '</div>'
+      + '<div class="vsug">מוצע: נוסח ' + esc(sug) + (used[sug] ? '' : ', עוד לא נשלח לקבוצה הזו') + '</div>'
+      + '<div class="vprev">' + esc(fbVar(pick).text) + '</div>'
+      + '<div class="fbrow">' + go + '</div>' + ask
+      + (ps.length ? '<h4>היסטוריה ומגיבים</h4>' + ps.map(fbPostHtml).join('') : '')
+      + '</div>';
+  }
+  return '<div class="fg st-' + st + '">'
+    + '<div class="fgh" data-act="open" data-g="' + g.id + '"><span class="fgn">' + esc(g.name) + '</span>'
+    + '<span class="fgs st-' + st + '">' + (lp ? PST[st] : 'טרם פורסם') + '</span></div>'
+    + '<div class="fgm">' + meta + '</div>' + body + '</div>';
+}
+
+function fbVariantsHtml(){
+  var perf = {};
+  FB.posts.forEach(function(p){
+    var r = perf[p.variant] || (perf[p.variant] = { n:0, live:0, cms:0, joined:0 });
+    r.n++; if(p.status === 'live') r.live++;
+    (p.commenters || []).forEach(function(c){ r.cms++; if(c.joined) r.joined++; });
+  });
+  var rows = FB.variants.map(function(v){
+    var r = perf[v.id] || { n:0, live:0, cms:0, joined:0 };
+    return '<tr><td>' + esc(v.id) + ' · ' + esc(v.title) + '</td><td>' + r.n + '</td><td>' + r.live
+      + '</td><td>' + r.cms + '</td><td>' + r.joined + '</td></tr>'; }).join('');
+  var edits = FB.variants.map(function(v){
+    return '<div class="vcard vedit"><b>נוסח ' + esc(v.id) + ' · ' + esc(v.title) + '</b>'
+      + '<textarea data-in="vtext" data-v="' + v.id + '">' + esc(v.text) + '</textarea>'
+      + '<div class="fbrow"><button class="fbtn sm" data-act="v-save" data-v="' + v.id + '">שמירת הנוסח</button>'
+      + '<button class="fbtn sm" data-act="v-copy" data-v="' + v.id + '">העתקה</button></div></div>'; }).join('');
+  return '<details class="fbsec"><summary>איזה נוסח עובד הכי טוב</summary>'
+    + '<div class="tw"><table class="adtab"><thead><tr><th>נוסח</th><th>פרסומים</th><th>באוויר</th>'
+    + '<th>הגיבו</th><th>הצטרפו</th></tr></thead><tbody>' + rows + '</tbody></table></div></details>'
+    + '<details class="fbsec"><summary>עריכת הנוסחים</summary>' + edits
+    + '<div class="vcard vedit"><b>ההודעה בפרטי למי שהגיב</b>'
+    + '<textarea data-in="dm" style="min-height:110px">' + esc(FB.dm || '') + '</textarea>'
+    + '<div class="fbrow"><button class="fbtn sm" data-act="dm-save">שמירה</button></div></div></details>';
+}
+
+function fbRender(){
+  if(!FB) { document.getElementById('fb').innerHTML = '<p class="empty">טוען...</p>'; return; }
+  if(TAB === 'fb') fbStats();
+  var h = '<div class="fbrow" style="margin:0 0 18px"><button class="fbtn go" data-act="dm-copy">'
+    + 'העתק את הודעת הקישור לפרטי</button></div>';
+  CATS.forEach(function(c){
+    var gs = FB.groups.filter(function(g){ return (g.cat || 'other') === c[0]; });
+    if(!gs.length) return;
+    var done = gs.filter(function(g){ return fbPosts(g.id).length; }).length;
+    h += '<section class="fbcat"><h2>' + esc(c[1]) + ' <span class="n">' + done + '/' + gs.length + '</span></h2>'
+      + gs.map(fbGroupHtml).join('') + '</section>';
+  });
+  var catOpts = CATS.map(function(c){ return '<option value="' + c[0] + '">' + esc(c[1]) + '</option>'; }).join('');
+  h += fbVariantsHtml()
+    + '<details class="fbsec"><summary>הוספת קבוצה</summary><div class="gadd">'
+    + '<select data-in="g-cat">' + catOpts + '</select>'
+    + '<input placeholder="שם הקבוצה" data-in="g-name">'
+    + '<input placeholder="קישור לקבוצה (לא חובה)" data-in="g-url" style="direction:ltr;text-align:left">'
+    + '<button class="fbtn go" data-act="g-add">הוספת הקבוצה</button></div></details>';
+  document.getElementById('fb').innerHTML = h;
+}
+
+function fbVal(sel){ var e = document.querySelector('#fb ' + sel); return e ? e.value : ''; }
+
+document.getElementById('fb').addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('[data-act]');
+  if(!b) return;
+  var act = b.getAttribute('data-act'), g = b.getAttribute('data-g'),
+      p = b.getAttribute('data-p'), c = b.getAttribute('data-c'), v = b.getAttribute('data-v');
+  var post = p && FB.posts.filter(function(x){ return x.id === p; })[0];
+  var cm = post && c && (post.commenters || []).filter(function(x){ return x.id === c; })[0];
+
+  if(act === 'open'){ FBOPEN[g] = !FBOPEN[g]; FBASK[g] = false; fbRender(); return; }
+  if(act === 'pick'){ FBPICK[g] = v; fbRender(); return; }
+  if(act === 'copy-go'){
+    /* ההעתקה חייבת לקרות בתוך הלחיצה עצמה, אחרת הנייד חוסם אותה. הקישור
+       נפתח מעצמו כי זה עוגן אמיתי, והרינדור נדחה כדי לא לעקור אותו. */
+    var vid = FBPICK[g] || fbSuggest(g);
+    toast(fbCopy(fbVar(vid).text) ? 'הנוסח הועתק, הדבק בקבוצה' : 'לא הצלחתי להעתיק');
+    FBASK[g] = true; FBPICK[g] = vid;
+    setTimeout(fbRender, 400);
+    return;
+  }
+  if(act === 'posted'){
+    FBASK[g] = false;
+    fbDo({ op:'post_add', group:g, variant: FBPICK[g] || fbSuggest(g), status: b.getAttribute('data-s') }, 'נרשם');
+    FBPICK[g] = null; return;
+  }
+  if(act === 'not-posted'){ FBASK[g] = false; fbRender(); return; }
+  if(act === 'url'){ fbDo({ op:'group_set', group:g, url: fbVal('[data-in="url"][data-g="' + g + '"]') }, 'הקישור נשמר'); return; }
+  if(act === 'p-del'){ if(confirm('למחוק את הפרסום הזה?')) fbDo({ op:'post_del', post:p }, 'נמחק'); return; }
+  if(act === 'c-add'){
+    fbDo({ op:'c_add', post:p, name: fbVal('[data-in="c-name"][data-p="' + p + '"]') }, 'המגיב נוסף'); return;
+  }
+  if(act === 'c-sent' && cm){
+    if(!cm.sent) fbCopy(FB.dm || '');
+    fbDo({ op:'c_set', post:p, c:c, sent: !cm.sent }, cm.sent ? '' : 'הודעת הקישור הועתקה, שלח לו בפרטי'); return;
+  }
+  if(act === 'c-joined' && cm){ fbDo({ op:'c_set', post:p, c:c, joined: !cm.joined }); return; }
+  if(act === 'c-del'){ if(confirm('למחוק את המגיב?')) fbDo({ op:'c_del', post:p, c:c }); return; }
+  if(act === 'dm-copy'){ toast(fbCopy(FB.dm || '') ? 'הודעת הקישור הועתקה' : 'לא הצלחתי להעתיק'); return; }
+  if(act === 'v-copy'){ toast(fbCopy(fbVar(v).text) ? 'הנוסח הועתק' : 'לא הצלחתי להעתיק'); return; }
+  if(act === 'v-save'){ fbDo({ op:'variant_set', variant:v, text: fbVal('[data-in="vtext"][data-v="' + v + '"]') }, 'הנוסח נשמר'); return; }
+  if(act === 'dm-save'){ fbDo({ op:'dm_set', text: fbVal('[data-in="dm"]') }, 'נשמר'); return; }
+  if(act === 'g-add'){
+    var name = fbVal('[data-in="g-name"]').trim();
+    if(!name){ toast('חסר שם לקבוצה'); return; }
+    fbDo({ op:'group_add', cat: fbVal('[data-in="g-cat"]'), name: name, url: fbVal('[data-in="g-url"]') }, 'הקבוצה נוספה');
+    return;
+  }
+});
+document.getElementById('fb').addEventListener('change', function(e){
+  var s = e.target;
+  if(s.getAttribute('data-act') === 'p-status')
+    fbDo({ op:'post_status', post: s.getAttribute('data-p'), status: s.value }, 'הסטטוס עודכן');
+});
+document.getElementById('fb').addEventListener('keydown', function(e){
+  if(e.key !== 'Enter') return;
+  var i = e.target;
+  if(i.getAttribute('data-in') === 'c-name'){
+    e.preventDefault();
+    var p = i.getAttribute('data-p');
+    fbDo({ op:'c_add', post:p, name: i.value }, 'המגיב נוסף');
+  }
+});
+
+/* סנכרון בין המכשירים: בחזרה ללשונית, וכל חצי דקה כשהיא פתוחה. לא
+   מרעננים באמצע הקלדה, אחרת מה שכתבת נמחק מתחת לאצבעות. */
+function fbTyping(){
+  var a = document.activeElement;
+  return a && document.getElementById('fb').contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+}
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && TAB === 'fb' && KEY && !fbTyping()) fbLoad(false, true);
+});
+setInterval(function(){
+  if(TAB === 'fb' && KEY && !document.hidden && !fbTyping()) fbLoad(false, true);
+}, 30000);
+
 /* חזרה ללשונית שכבר נכנסה בה */
 (function(){
   var k = null;
@@ -996,6 +1375,7 @@ function f(label, v){
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
     render();
+    restoreTab();
   }).catch(function(){
     KEY = null;
     try { sessionStorage.removeItem('dg_k'); } catch(x){}
