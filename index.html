@@ -581,8 +581,15 @@ function meetWhen(iso, tz){
 }
 function meetPanel(l){
   var m = l.meeting || {};
-  if(!m.start && !m.zoom) return '';
+  var pref = l.booking_pref || m.pref || '';
+  if(!m.start && !m.zoom && !pref) return '';
   var cancelled = !!m.cancelled_at;
+  /* בקשת מועד מ-/time: אין סלוט נעול ביומן, יש העדפה מתי לחזור אליו. */
+  if(pref && !m.start && !m.zoom){
+    return '<div class="meet"><span class="mh">ביקש מועד לשיחה</span>'
+      + '<p class="mw">נוח לו: ' + esc(pref) + '</p>'
+      + '<p class="mt">חזרה אליו לתיאום שעה מדויקת, בטלפון או בוואטסאפ</p></div>';
+  }
   return '<div class="meet' + (cancelled ? ' off' : '') + '">'
     + '<span class="mh">' + (cancelled ? 'הפגישה בוטלה' : 'פגישת ניתוח נקבעה') + '</span>'
     + (m.start ? '<p class="mw">' + esc(meetWhen(m.start, m.tz)) + '</p>' : '')
@@ -906,6 +913,15 @@ async function metaPanel(){
   }
   var t = d.total, ours = campLeads();
   var cpl = ours ? (t.spend / ours) : 0;
+  /* עלות לעסקה ו-ROAS, מיוחסים לקמפיין. אלה המדדים שמודדים כסף אמיתי,
+     לא מילויים זולים. */
+  var cWon = realLeads().filter(function(l){
+    return ((l.utm || {}).campaign || '').trim() && reached(l, 'won', ['meeting_won']); }).length;
+  var cRev = realLeads().reduce(function(s, l){
+    return s + ((((l.utm || {}).campaign || '').trim() && reached(l, 'won', ['meeting_won']))
+      ? (Number(l.deal_amount) || 0) : 0); }, 0);
+  var cpd = cWon ? (t.spend / cWon) : 0;
+  var roas = (t.spend && cRev) ? (cRev / t.spend) : 0;
   var rows = d.campaigns.map(function(c){
     var st = c.status === 'ACTIVE' ? '<span class="on">פעיל</span>'
            : '<span class="off">' + (c.status === 'PAUSED' ? 'מושהה' : esc(c.status || '·')) + '</span>';
@@ -923,6 +939,8 @@ async function metaPanel(){
     +   f('הגיעו לדף', t.lpv)
     +   f('אבחונים מהקמפיין', ours)
     +   f('עלות לאבחון', ours ? money(cpl) : 'עוד אין')
+    +   f('עלות לעסקה', cWon ? money(cpd) : 'עוד אין')
+    +   f('החזר על הפרסום', roas ? (roas.toFixed(2) + 'x') : 'עוד אין')
     + '</div>'
     + '<div class="tw"><table class="adtab"><thead><tr><th>קמפיין</th><th>הוצאה</th>'
       + '<th>חשיפות</th><th>קליקים</th><th>הגיעו לדף</th></tr></thead>'
