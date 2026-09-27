@@ -226,6 +226,37 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .addform input,.addform textarea{display:block;width:100%;margin:0 0 10px;font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid #e4e0ee;border-radius:10px;box-sizing:border-box}
 .addform textarea{min-height:60px;resize:vertical}
 .addbtns{display:flex;gap:10px;margin-top:6px}
+.chip.segchip{background:#eef7f1;color:#0c8a5f;border-color:#cfeadd}
+/* טבלת לידים */
+.ltwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #ece9f2;border-radius:14px}
+table.ltable{width:100%;border-collapse:collapse;font-size:14px;min-width:640px}
+table.ltable thead th{text-align:right;font-size:12px;font-weight:800;color:#8b8899;padding:11px 12px;border-bottom:1px solid #ece9f2;white-space:nowrap;position:sticky;top:0;background:#fff;z-index:1}
+table.ltable td{padding:11px 12px;border-bottom:1px solid #f2f0f7;vertical-align:middle}
+tr.lrow{cursor:pointer;transition:background .12s}
+tr.lrow:hover{background:#faf9fd}
+tr.lrow:last-child td{border-bottom:0}
+.tdot{width:14px;padding-inline-end:0!important}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#9a94a5}
+.dot.now{background:#ff2d8e}.dot.soon{background:#ff7a1a}.dot.later{background:#9a94a5}
+.tname{font-weight:800;color:#14121c;min-width:120px}
+.tname .tbiz{display:block;font-weight:600;font-size:12px;color:#8b8899}
+.tname .tflags{margin-top:3px;display:flex;gap:4px;flex-wrap:wrap}
+.tphone{direction:ltr;text-align:right;color:#4f4d5e;white-space:nowrap;font-variant-numeric:tabular-nums}
+.tmeet{font-size:12.5px;color:#4f4d5e}.tmeet .pref{color:#c95c07;font-weight:700}
+.mut{color:#c7c3d2}
+.btn.wa.mini{padding:6px 10px;font-size:12.5px}
+/* מודל כרטיס לקוח */
+.overlay{position:fixed;inset:0;background:rgba(20,18,28,.5);display:none;align-items:flex-start;justify-content:center;z-index:60;padding:24px 12px;overflow-y:auto}
+.overlay.open{display:flex}
+.sheet{position:relative;background:#fff;border-radius:18px;max-width:560px;width:100%;padding:22px;box-shadow:0 24px 70px rgba(20,18,28,.4);margin:auto}
+.sheetx{position:absolute;top:12px;left:12px;border:0;background:#f4f2f8;color:#5a5470;width:32px;height:32px;border-radius:50%;font-size:15px;cursor:pointer;line-height:1}
+.mhead{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:0 34px 10px 0}
+.mhead .cname{font-size:20px;font-weight:800;color:#14121c}
+.mhead .cbiz{display:block;font-size:13px;font-weight:600;color:#8b8899;margin-top:2px}
+.mhead .cago{font-size:12px;color:#9a94a5;white-space:nowrap}
+.danger{margin-top:18px;padding-top:14px;border-top:1px solid #f2eef4;text-align:center}
+.btn.del{background:#fff;color:#c02626;border:1px solid #f0caca}
+.btn.del:hover{background:#fdecec}
 
 /* ── לשוניות ───────────────────────────────────────────── */
 .tabs{display:flex;gap:6px;max-width:640px;margin:10px auto 0}
@@ -346,6 +377,13 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
       </div>
     </form>
   </dialog>
+
+  <div id="leadOv" class="overlay" onclick="if(event.target===this)closeLead()">
+    <div class="sheet">
+      <button class="sheetx" onclick="closeLead()" aria-label="סגירה">✕</button>
+      <div id="leadBody"></div>
+    </div>
+  </div>
   <p class="cr">© כל הזכויות שמורות · דיוק דיגיטלי · גל הרוש 2026</p>
 </div>
 
@@ -748,23 +786,139 @@ function card(l){
     + '</div>' + body + '</div>';
 }
 
-function render(){
-  renderStats();
-  var g = { now:[], soon:[], later:[] };
-  LEADS.forEach(function(l){ (g[(l.priority || {}).band] || g.later).push(l); });
-  var h = '';
-  BANDS.forEach(function(b){
-    if(!g[b].length) return;
-    h += '<section class="grp ' + b + '">'
-      + '<div class="ghead"><h2>' + BAND_LABEL[b] + '</h2><span class="n">' + g[b].length + '</span></div>'
-      + '<p class="gnote">' + BAND_NOTE[b] + '</p>'
-      + g[b].map(card).join('') + '</section>';
-  });
-  document.getElementById('list').innerHTML = h ||
-    '<p class="empty">עוד לא נכנס אף אבחון.</p>';
+/* ── תצוגת טבלה: שורה לכל ליד, לחיצה פותחת כרטיס מלא במודל ──────────
+   מחליף את הכרטיסים הנערמים. יותר לידים בפחות מסך, פחות גלילה, וכל
+   הפרטים בכרטיס שנפתח בלחיצה. card() הישן לא נקרא יותר. גל, 28/09/2026. */
+function chipHtml(l){
+  var m = l.map || {};
+  var chips = '';
+  if(AWARE[m.awareness]) chips += '<span class="chip aw-' + m.awareness + '">' + AWARE[m.awareness] + '</span>';
+  if(TEMP[m.temp]) chips += '<span class="chip tp-' + m.temp + '">' + TEMP[m.temp] + '</span>';
+  if(l.segment) chips += '<span class="chip segchip">פלח ' + l.segment + '</span>';
+  if(SRC[m.source]) chips += '<span class="chip srcchip">אצלו: ' + SRC[m.source] + '</span>';
+  if(adKey(l)) chips += '<span class="chip adchip">' + esc(adName(l)) + '</span>';
+  var stag = SRC_TAG[l.src] || (l.src ? esc(l.src) : 'אורגני');
+  var scls = l.src === 'paid' ? 'paidchip' : l.src === 'bio_paid' ? 'biopaidchip' : l.src === 'manual' ? 'manualchip' : '';
+  chips += '<span class="chip ' + scls + '">' + stag + '</span>';
+  if(l.wa_exists && l.wa_exists.ok === false) chips += '<span class="chip nowachip">אין וואטסאפ למספר</span>';
+  if(l.demo) chips += '<span class="chip demochip">ליד בדיקה</span>';
+  if(l.unsub) chips += '<span class="chip unschip">ביקש הסרה</span>';
+  return chips;
+}
+function srcTagCell(l){
+  var stag = SRC_TAG[l.src] || (l.src ? esc(l.src) : 'אורגני');
+  var scls = l.src === 'paid' ? 'paidchip' : l.src === 'bio_paid' ? 'biopaidchip' : l.src === 'manual' ? 'manualchip' : '';
+  return '<span class="chip ' + scls + '">' + stag + '</span>';
+}
+function meetCell(l){
+  var m = l.meeting || {};
+  var pref = l.booking_pref || m.pref || '';
+  if(m.cancelled_at) return '<span class="mut">בוטל</span>';
+  if(m.start) return esc(meetWhen(m.start, m.tz));
+  if(pref) return '<span class="pref">נוח לו: ' + esc(pref) + '</span>';
+  return '<span class="mut">·</span>';
+}
+function rowHtml(l){
+  var p = l.priority || {};
+  var flags = (l.demo ? '<span class="chip demochip">בדיקה</span>' : '')
+            + (l.unsub ? '<span class="chip unschip">הסרה</span>' : '')
+            + (l.wa_exists && l.wa_exists.ok === false ? '<span class="chip nowachip">אין וא</span>' : '');
+  var waCell = (l.phone && !(l.wa_exists && l.wa_exists.ok === false))
+    ? '<a class="btn wa mini" href="' + wa(l.phone) + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">וואטסאפ</a>' : '';
+  return '<tr class="lrow" onclick="openLead(\'' + l.id + '\')">'
+    + '<td class="tdot"><span class="dot ' + esc(p.band || 'later') + '"></span></td>'
+    + '<td class="tname">' + esc(l.name || 'בלי שם')
+        + (l.business ? '<span class="tbiz">' + esc(l.business) + '</span>' : '')
+        + (flags ? '<div class="tflags">' + flags + '</div>' : '') + '</td>'
+    + '<td class="tphone" dir="ltr">' + esc(l.phone || '·') + '</td>'
+    + '<td>' + (l.segment ? 'פלח ' + l.segment : '<span class="mut">·</span>') + '</td>'
+    + '<td>' + srcTagCell(l) + '</td>'
+    + '<td>' + (STATUS[l.status] || l.status || '·') + '</td>'
+    + '<td class="tmeet">' + meetCell(l) + '</td>'
+    + '<td class="twa" onclick="event.stopPropagation()">' + waCell + '</td>'
+    + '</tr>';
+}
+function leadDetailHtml(l){
+  var m = l.map || {};
+  var opts = Object.keys(STATUS).map(function(k){
+    return '<option value="' + k + '"' + (l.status === k ? ' selected' : '') + '>' + STATUS[k] + '</option>'; }).join('');
+  var q = l.question ? '<div class="q"><span>שאלה שהשאירו</span><p>' + esc(l.question) + '</p></div>' : '';
+  var leaks = (m.leaks || []).map(function(x){
+    var h = (x && typeof x === 'object') ? (x.h || '') : '';
+    var t = (x && typeof x === 'object') ? (x.t || '') : String(x || '');
+    return '<li>' + (h ? '<b>' + esc(h) + '</b>' : '') + '<span>' + esc(t) + '</span></li>';
+  }).join('');
+  var srcAns = ((l.full || {}).answers || {}).source;
+  var answers = m.answers || [];
+  if(srcAns && srcAns.label && !answers.some(function(a){ return a.q === 'היום, מאיפה מגיעים רוב הלקוחות החדשים שלך?'; })){
+    answers = [{ q: 'היום, מאיפה מגיעים רוב הלקוחות החדשים שלך?', a: srcAns.label }].concat(answers);
+  }
+  var ans = answers.map(function(a){
+    return '<div class="arow"><span class="aq">' + esc(a.q) + '</span><span class="aa">' + esc(a.a) + '</span></div>'; }).join('');
+  var mail = '<div class="mail"><span class="' + ((l.map_mail || {}).id ? 'ok' : 'no') + '">מפה במייל</span>'
+    + '<span class="' + (l.summary_sent ? 'ok' : 'no') + '">סיכום אליי</span></div>';
+  return '<div class="mhead"><div class="cname">' + esc(l.name || 'בלי שם')
+    + (l.business ? '<span class="cbiz">' + esc(l.business) + '</span>' : '') + '</div>'
+    + '<div class="cago">' + esc(ago(l.created_at)) + (ilTime(l.created_at) ? ' · ' + ilTime(l.created_at) : '') + '</div></div>'
+    + '<div class="chips">' + chipHtml(l) + '</div>'
+    + q + meetPanel(l)
+    + '<div class="row">'
+    +   (l.phone ? '<a class="btn call" href="tel:' + esc(l.phone) + '">' + esc(l.phone) + '</a>' : '')
+    +   (l.phone && !(l.wa_exists && l.wa_exists.ok === false) ? '<a class="btn wa" href="' + wa(l.phone) + '" target="_blank" rel="noopener">וואטסאפ</a>' : '')
+    +   '<select onchange="setStatus(\'' + l.id + '\', this.value)">' + opts + '</select>'
+    + '</div>'
+    + '<div class="body">'
+    +   adBlock(l)
+    +   (leaks ? '<h4>שלוש הדליפות, לפי סדר הכסף</h4><ol class="leaks">' + leaks + '</ol>' : '')
+    +   (ans ? '<h4>מה סימנו באבחון</h4><div class="ans">' + ans + '</div>' : '')
+    +   '<label class="note">הערות<textarea rows="2" placeholder="מה נאמר בשיחה" onchange="saveNote(\'' + l.id + '\', this.value)">' + esc(l.notes || '') + '</textarea></label>'
+    +   '<label class="deal">סכום עסקה <input type="number" inputmode="numeric" value="' + (Number(l.deal_amount) || '') + '" onchange="saveDeal(\'' + l.id + '\', this.value)"> ₪</label>'
+    +   engBlock(l) + unsubBlock(l) + mail
+    +   '<div class="danger"><button class="btn del" onclick="delLead(\'' + l.id + '\')">מחק ליד לצמיתות</button></div>'
+    + '</div>';
+}
+var eid = null;
+function openLead(id){
+  var l = LEADS.find(function(x){ return x.id === id; });
+  if(!l) return;
+  eid = id; OPEN[id] = true;
+  document.getElementById('leadBody').innerHTML = leadDetailHtml(l);
+  document.getElementById('leadOv').classList.add('open');
+}
+function closeLead(){ document.getElementById('leadOv').classList.remove('open'); eid = null; }
+async function delLead(id){
+  var l = LEADS.find(function(x){ return x.id === id; });
+  var nm = l ? (l.name || 'הליד') : 'הליד';
+  if(!confirm('למחוק את "' + nm + '" לצמיתות? הוא יורד גם מהסטטיסטיקה, ואי אפשר לשחזר.')) return;
+  try {
+    await wk('/lead/' + id, { method:'DELETE' });
+    closeLead();
+    await load();
+    toast('הליד נמחק');
+  } catch(x){ toast('לא נמחק. ' + x.message); }
 }
 
-function toggle(id){ OPEN[id] = !OPEN[id]; render(); }
+function render(){
+  renderStats();
+  var order = { now:0, soon:1, later:2 };
+  var sorted = LEADS.slice().sort(function(a, b){
+    var ba = order[(a.priority || {}).band]; if(ba == null) ba = 3;
+    var bb = order[(b.priority || {}).band]; if(bb == null) bb = 3;
+    if(ba !== bb) return ba - bb;
+    return ((b.priority || {}).score || 0) - ((a.priority || {}).score || 0);
+  });
+  if(!sorted.length){
+    document.getElementById('list').innerHTML = '<p class="empty">עוד לא נכנס אף אבחון.</p>';
+  } else {
+    document.getElementById('list').innerHTML =
+      '<div class="ltwrap"><table class="ltable"><thead><tr>'
+      + '<th></th><th>שם</th><th>טלפון</th><th>פלח</th><th>מקור</th><th>סטטוס</th><th>מועד</th><th>וואטסאפ</th>'
+      + '</tr></thead><tbody>' + sorted.map(rowHtml).join('') + '</tbody></table></div>';
+  }
+  if(eid){ var l = LEADS.find(function(x){ return x.id === eid; }); if(l) document.getElementById('leadBody').innerHTML = leadDetailHtml(l); }
+}
+
+function toggle(id){ if(eid === id) closeLead(); else openLead(id); }
 
 async function patch(id, body, msg){
   try {
