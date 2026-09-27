@@ -255,6 +255,11 @@ tr.lrow:last-child td{border-bottom:0}
 .danger{margin-top:18px;padding-top:14px;border-top:1px solid #f2eef4;text-align:center}
 .btn.del{background:#fff;color:#c02626;border:1px solid #f0caca}
 .btn.del:hover{background:#fdecec}
+/* דסקטופ: רוחב מלא לטבלה ולסרגלים, במקום 640 שנועד למובייל */
+@media(min-width:900px){
+  main,.htop,.stats,.tabs,.cr{max-width:1400px}
+  table.ltable{min-width:0}
+}
 
 /* ── לשוניות ───────────────────────────────────────────── */
 .tabs{display:flex;gap:6px;max-width:640px;margin:10px auto 0}
@@ -617,12 +622,14 @@ var HELD = ['meeting_attended','meeting_won'];
 
 function renderStats(){
   if(TAB === 'fb') return;   /* בלשונית הקבוצות שורת המספרים שייכת להן */
-  var n = LEADS.length;
-  var hot = LEADS.filter(function(l){ return (l.priority || {}).band === 'now'; }).length;
-  var booked = LEADS.filter(function(l){ return reached(l, 'booked', BOOKED); }).length;
-  var held = LEADS.filter(function(l){ return reached(l, 'held', HELD); }).length;
-  var won = LEADS.filter(function(l){ return reached(l, 'won', ['meeting_won']); }).length;
-  var rev = LEADS.reduce(function(s, l){ return s + (Number(l.deal_amount) || 0); }, 0);
+  /* הצ'יפים העליונים סופרים לידים אמיתיים בלבד, בלי לידי בדיקה, כמו מסך הביצועים. */
+  var rl = realLeads();
+  var n = rl.length;
+  var hot = rl.filter(function(l){ return (l.priority || {}).band === 'now'; }).length;
+  var booked = rl.filter(function(l){ return reached(l, 'booked', BOOKED); }).length;
+  var held = rl.filter(function(l){ return reached(l, 'held', HELD); }).length;
+  var won = rl.filter(function(l){ return reached(l, 'won', ['meeting_won']); }).length;
+  var rev = rl.reduce(function(s, l){ return s + (Number(l.deal_amount) || 0); }, 0);
   var h = '<span>אבחונים <b>' + n + '</b></span>'
         + '<span>לחיוג עכשיו <b>' + hot + '</b></span>'
         + '<span>שיחות נקבעו <b>' + booked + '</b></span>'
