@@ -213,6 +213,17 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
 .chip.demochip{background:#eef1f7;color:#5a6b8c;border-color:#d7deea}
 .chip.nowachip{background:#fff0f0;color:#b3261e;border-color:#f5c6c2}
 .chip.srcchip{background:#f4f2f8;color:#5a5470;border-color:#e4e0ee}
+.chip.biopaidchip{background:#fff6ee;color:#c95c07;border-color:#ffe7d2}
+.chip.manualchip{background:#eeeefb;color:#3b3b8f;border-color:#dcdcf5}
+.setmeet{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.setmeet .mtinput{flex:1;min-width:160px;font-family:inherit;font-size:13px;padding:8px 10px;border:1px solid #e4e0ee;border-radius:9px}
+.setmeet .setmeetbtn{white-space:nowrap}
+#addDlg{border:0;border-radius:16px;padding:20px;max-width:400px;width:92%;box-shadow:0 20px 60px rgba(20,18,28,.35)}
+#addDlg::backdrop{background:rgba(20,18,28,.45)}
+#addDlg h3{margin:0 0 12px;font-size:18px}
+.addform input,.addform textarea{display:block;width:100%;margin:0 0 10px;font-family:inherit;font-size:14px;padding:10px 12px;border:1px solid #e4e0ee;border-radius:10px;box-sizing:border-box}
+.addform textarea{min-height:60px;resize:vertical}
+.addbtns{display:flex;gap:10px;margin-top:6px}
 
 /* ── לשוניות ───────────────────────────────────────────── */
 .tabs{display:flex;gap:6px;max-width:640px;margin:10px auto 0}
@@ -307,6 +318,7 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
       <span class="b">דיוק דיגיטלי</span>
       <button onclick="openPerf()" id="pbtn">ביצועים</button>
       <button onclick="refreshTab()" id="rbtn">רענון</button>
+      <button onclick="openAddLead()" id="addbtn">+ ליד ידני</button>
       <button onclick="logout()">יציאה</button>
     </div>
     <div class="tabs">
@@ -317,6 +329,21 @@ main{max-width:640px;margin:0 auto;padding:18px 16px 60px}
   </header>
   <main id="list"></main>
   <main id="fb" class="hidden"></main>
+
+  <dialog id="addDlg">
+    <form class="addform" onsubmit="return submitAddLead(event)">
+      <h3>הוספת ליד ידני</h3>
+      <input id="al-name" placeholder="שם" autocomplete="off">
+      <input id="al-phone" placeholder="טלפון" inputmode="tel" autocomplete="off">
+      <input id="al-email" placeholder="אימייל (לא חובה)" inputmode="email" autocomplete="off">
+      <input id="al-biz" placeholder="עסק (לא חובה)" autocomplete="off">
+      <textarea id="al-notes" placeholder="הערה (לא חובה)"></textarea>
+      <div class="addbtns">
+        <button type="submit" class="btn primary">הוסף</button>
+        <button type="button" class="btn" onclick="document.getElementById('addDlg').close()">ביטול</button>
+      </div>
+    </form>
+  </dialog>
   <p class="cr">© כל הזכויות שמורות · דיוק דיגיטלי · גל הרוש 2026</p>
 </div>
 
@@ -577,27 +604,43 @@ function meetWhen(iso, tz){
   var hour = d.toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' });
   return day + ' בשעה ' + hour;
 }
+/* תגי מקור התנועה של הליד. שונה מ-SRC (תשובת שאלה 1 על מקור הלקוחות שלו). */
+var SRC_TAG = {
+  paid: 'ממומן',
+  bio_paid: 'ביו · מושפע מפרסום',
+  bio_org: 'ביו · אורגני',
+  org: 'אורגני',
+  manual: 'ידני'
+};
 function meetPanel(l){
   var m = l.meeting || {};
   var pref = l.booking_pref || m.pref || '';
-  if(!m.start && !m.zoom && !pref) return '';
   var cancelled = !!m.cancelled_at;
-  /* בקשת מועד מ-/time: אין סלוט נעול ביומן, יש העדפה מתי לחזור אליו. */
-  if(pref && !m.start && !m.zoom){
-    return '<div class="meet"><span class="mh">ביקש מועד לשיחה</span>'
-      + '<p class="mw">נוח לו: ' + esc(pref) + '</p>'
-      + '<p class="mt">חזרה אליו לתיאום שעה מדויקת, בטלפון או בוואטסאפ</p></div>';
+  var open = !!OPEN[l.id];
+  /* יש מועד נעול: מציגים אותו. */
+  if(m.start){
+    return '<div class="meet' + (cancelled ? ' off' : '') + '">'
+      + '<span class="mh">' + (cancelled ? 'הפגישה בוטלה' : 'פגישת ניתוח נקבעה') + '</span>'
+      + '<p class="mw">' + esc(meetWhen(m.start, m.tz)) + '</p>'
+      + (m.title ? '<p class="mt">' + esc(m.title) + '</p>' : '')
+      + (!cancelled && m.zoom
+          ? '<a class="btn zoom" href="' + esc(m.zoom) + '" target="_blank" rel="noopener">'
+            + 'כניסה לזום</a>'
+            + '<button class="btn copy" data-copy="' + esc(m.zoom) + '">'
+            + 'העתקת הקישור</button>'
+          : '')
+      + '</div>';
   }
-  return '<div class="meet' + (cancelled ? ' off' : '') + '">'
-    + '<span class="mh">' + (cancelled ? 'הפגישה בוטלה' : 'פגישת ניתוח נקבעה') + '</span>'
-    + (m.start ? '<p class="mw">' + esc(meetWhen(m.start, m.tz)) + '</p>' : '')
-    + (m.title ? '<p class="mt">' + esc(m.title) + '</p>' : '')
-    + (!cancelled && m.zoom
-        ? '<a class="btn zoom" href="' + esc(m.zoom) + '" target="_blank" rel="noopener">'
-          + 'כניסה לזום</a>'
-          + '<button class="btn copy" data-copy="' + esc(m.zoom) + '">'
-          + 'העתקת הקישור</button>'
-        : '')
+  /* אין מועד נעול. קובע-מועד ידני למי שביקש מועד ב-/time, לליד ידני, או לכל
+     ליד פתוח. הזנת מועד כאן כותבת אותו לוורקר ומפעילה אוטומטית את "קבענו"
+     ואת שרשרת התזכורות, בלי תלות ב-Cal. גל, 27/09/2026. */
+  if(!(pref || l.manual || open)) return '';
+  return '<div class="meet">'
+    + '<span class="mh">' + (pref ? 'ביקש מועד לשיחה' : 'קביעת מועד') + '</span>'
+    + (pref ? '<p class="mw">נוח לו: ' + esc(pref) + '</p>' : '')
+    + '<p class="mt">קבע מועד מדויק, וזה יפעיל אוטומטית את "קבענו" ואת התזכורות:</p>'
+    + '<div class="setmeet"><input type="datetime-local" class="mtinput" id="mt-' + esc(l.id) + '">'
+    + '<button class="btn setmeetbtn" data-lead="' + esc(l.id) + '">קבע מועד</button></div>'
     + '</div>';
 }
 /* מאזין אחד לכל כפתורי ההעתקה, כך ששום קישור לא צריך לעבור דרך onclick */
@@ -636,8 +679,11 @@ function card(l){
   if(adKey(l)) chips += '<span class="chip adchip">' + esc(adName(l)) + '</span>';
   /* מוצג בראש הכרטיס בכוונה. מי שביקש הסרה חייב להיראות לפני שמתקשרים. */
   /* ממומן או אורגני. בלי זה אי אפשר לדעת אילו לידים באמת עלו כסף. */
-  if(l.src === 'paid') chips += '<span class="chip paidchip">ממומן</span>';
-  else if(l.src === 'org') chips += '<span class="chip">אורגני</span>';
+  var stag = SRC_TAG[l.src] || (l.src ? esc(l.src) : 'אורגני');
+  var scls = l.src === 'paid' ? 'paidchip'
+           : l.src === 'bio_paid' ? 'biopaidchip'
+           : l.src === 'manual' ? 'manualchip' : '';
+  chips += '<span class="chip ' + scls + '">' + stag + '</span>';
   /* מספר שאינו קיים בוואטסאפ. מוצג בראש הכרטיס כי זה משנה איך
      פונים אליו, ואין טעם לגלות את זה רק כשמנסים לכתוב. */
   if(l.wa_exists && l.wa_exists.ok === false)
@@ -730,6 +776,44 @@ async function patch(id, body, msg){
 function setStatus(id, v){ patch(id, { status:v }, 'הסטטוס עודכן'); }
 function saveNote(id, v){ patch(id, { notes:v }, 'ההערה נשמרה'); }
 function saveDeal(id, v){ patch(id, { deal_amount: Number(v) || 0 }, 'הסכום נשמר'); }
+
+/* ── הוספת ליד ידני ─────────────────────────────────────── */
+function openAddLead(){ var d = document.getElementById('addDlg'); if(d && d.showModal) d.showModal(); }
+async function submitAddLead(e){
+  e.preventDefault();
+  var g = function(id){ var el = document.getElementById(id); return el ? (el.value || '').trim() : ''; };
+  var name = g('al-name'), phone = g('al-phone'), email = g('al-email'),
+      biz = g('al-biz'), notes = g('al-notes');
+  if(!name && !phone && !email){ toast('צריך לפחות שם או טלפון'); return false; }
+  try {
+    await wk('/lead-manual', { method:'POST',
+      body: JSON.stringify({ name:name, phone:phone, email:email, business:biz, notes:notes }) });
+    document.getElementById('addDlg').close();
+    ['al-name','al-phone','al-email','al-biz','al-notes'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value = ''; });
+    await load();
+    toast('הליד נוסף');
+  } catch(x){ toast('לא נוסף. ' + x.message); }
+  return false;
+}
+
+/* ── קביעת מועד ידנית: כותבת מועד לוורקר ומפעילה אישור + תזכורות ── */
+document.addEventListener('click', function(e){
+  var b = e.target.closest && e.target.closest('.setmeetbtn');
+  if(!b) return;
+  e.preventDefault();
+  var id = b.getAttribute('data-lead');
+  var inp = document.getElementById('mt-' + id);
+  var val = inp && inp.value;
+  if(!val){ toast('בחר תאריך ושעה'); return; }
+  var iso;
+  try { iso = new Date(val).toISOString(); } catch(x){ toast('תאריך לא תקין'); return; }
+  b.disabled = true;
+  wk('/set-meeting', { method:'POST', body: JSON.stringify({ lead_id:id, start:iso }) })
+    .then(function(){ return load(); })
+    .then(function(){ toast('המועד נקבע, האישור והתזכורות יופעלו'); })
+    .catch(function(x){ b.disabled = false; toast('לא נשמר. ' + x.message); });
+});
 
 
 /* ── מה הליד עשה בדף ─────────────────────────────────────────
