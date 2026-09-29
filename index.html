@@ -334,6 +334,44 @@ tr.lrow:last-child td{border-bottom:0}
 .fbsec>summary::-webkit-details-marker{display:none}
 .fbsec>summary:before{content:'+ ';color:var(--pink)}
 .fbsec[open]>summary:before{content:'- '}
+/* ── לשונית ניהול לקוחות ── */
+#clients{padding-top:6px}
+.pjnew{background:#fff;border:1px dashed var(--line2);border-radius:15px;padding:13px 14px;margin-bottom:16px}
+.pjnew>summary{cursor:pointer;font-size:14px;font-weight:800;color:var(--pink);list-style:none}
+.pjnew>summary::-webkit-details-marker{display:none}
+.pjnew>summary:before{content:'+ '}
+.pjnew[open]>summary:before{content:'– '}
+.pjnew .nf{display:grid;gap:8px;margin-top:12px;grid-template-columns:1fr 1fr}
+.pjnew .nf input{padding:10px 12px;border:1px solid var(--line2);border-radius:11px;font-size:13.5px;background:#fff;color:var(--txt)}
+.pjnew .nf input:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px var(--pinkL)}
+.pjnew .nf .idf{direction:ltr;text-align:left}
+.pjnew .nf .go{grid-column:1 / -1;background:var(--pink);border:1px solid var(--pink);color:#fff;font-weight:800;padding:11px 14px;border-radius:11px;cursor:pointer;font-size:14px}
+.pjnew .nf .go:disabled{opacity:.5;cursor:default}
+.pjnew .hint{grid-column:1 / -1;font-size:11.5px;color:var(--mut2);font-weight:700;margin-top:-2px}
+.pjgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.pj{background:var(--card);border:1px solid var(--line2);border-radius:16px;padding:15px 16px;box-shadow:0 1px 2px rgba(20,18,28,.05)}
+.pj h3{margin:0;font-size:17px;font-weight:800;letter-spacing:-.2px;overflow-wrap:anywhere}
+.pj .who{color:var(--mut);font-size:12.5px;font-weight:700;margin-top:1px}
+.pj .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:14px 0 6px}
+.pj .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--orange))}
+.pj .pln{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:700;color:var(--mut2);font-variant-numeric:tabular-nums}
+.pj .pln b{color:var(--txt);font-size:13px}
+.pj .rows{display:flex;gap:8px;margin:13px 0 4px}
+.pj .mini{flex:1;background:#faf9fd;border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+.pj .mini .k{font-size:11px;font-weight:800;color:var(--mut2)}
+.pj .mini .v{font-size:15px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.pj .mini.wait{background:var(--orangeT);border-color:var(--orangeL)}
+.pj .mini.wait .k,.pj .mini.wait .v{color:var(--orangeS)}
+.pj .mini.doneall{background:var(--greenT);border-color:var(--greenL)}
+.pj .mini.doneall .k,.pj .mini.doneall .v{color:var(--greenS)}
+.pj .last{font-size:11.5px;color:var(--mut2);font-weight:700;margin-top:9px}
+.pj .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:13px}
+.pj .acts button,.pj .acts a{font-size:13px;font-weight:800;padding:9px 12px;border-radius:11px;text-decoration:none;
+  border:1px solid var(--line2);background:#fff;color:var(--txt);cursor:pointer;white-space:nowrap}
+.pj .acts .open{background:var(--txt);border-color:var(--txt);color:#fff;flex:1 1 auto;text-align:center}
+.pj .acts .cp:hover{border-color:var(--pink);color:var(--pinkS)}
+.pjempty{background:#fff;border:1px dashed var(--line2);border-radius:15px;padding:24px 16px;text-align:center;color:var(--mut2);font-weight:700;line-height:1.7}
+@media(max-width:560px){.pjnew .nf{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -362,11 +400,13 @@ tr.lrow:last-child td{border-bottom:0}
     <div class="tabs">
       <button id="tab-leads" class="on" onclick="showTab('leads')">לידים</button>
       <button id="tab-fb" onclick="showTab('fb')">קבוצות פייסבוק</button>
+      <button id="tab-clients" onclick="showTab('clients')">ניהול לקוחות</button>
     </div>
     <div class="stats" id="stats"></div>
   </header>
   <main id="list"></main>
   <main id="fb" class="hidden"></main>
+  <main id="clients" class="hidden"></main>
 
   <dialog id="addDlg">
     <form class="addform" onsubmit="return submitAddLead(event)">
@@ -411,6 +451,10 @@ var WORKER = 'https://dg-gal-funnel.tom-harush.workers.dev';
 var SALT_HEX = '8f1cdaf9bbd12314431c09a532e6f3af';
 var ITER = 600000;
 var KEY = null;      /* המפתח הגזור, חי רק בזיכרון ובלשונית הזו */
+var PWORKER = 'https://dg-gal-projects.tom-harush.workers.dev';
+var PSALT_HEX = 'b95e2a0a1643090293913c4d20a1101c';   /* מלח נפרד; מוזרק בבנייה, אינו סוד */
+var PKEY = null;     /* טוקן אדמין לוורקר הפרויקטים, נגזר מאותה סיסמה במלח הזה */
+var PROJECTS = [];
 var LEADS = [];
 var OPEN = {};
 
@@ -556,11 +600,11 @@ function buf2hex(b){
   return Array.prototype.map.call(new Uint8Array(b), function(x){
     return ('00' + x.toString(16)).slice(-2); }).join('');
 }
-async function derive(pw){
+async function derive(pw, saltHex){
   var base = await crypto.subtle.importKey('raw', new TextEncoder().encode(pw),
     'PBKDF2', false, ['deriveBits']);
   var bits = await crypto.subtle.deriveBits(
-    { name:'PBKDF2', salt: hex2buf(SALT_HEX), iterations: ITER, hash:'SHA-256' },
+    { name:'PBKDF2', salt: hex2buf(saltHex || SALT_HEX), iterations: ITER, hash:'SHA-256' },
     base, 256);
   return buf2hex(bits);
 }
@@ -576,6 +620,17 @@ async function wk(path, opts){
   return r.json();
 }
 
+/* ── קריאות לוורקר הפרויקטים (ניהול לקוחות) ─────────────── */
+async function pwk(path, opts){
+  opts = opts || {};
+  opts.headers = Object.assign({ 'Authorization': 'Bearer ' + PKEY,
+    'Content-Type': 'application/json' }, opts.headers || {});
+  var r = await fetch(PWORKER + path, opts);
+  if(r.status === 401) throw new Error('unauthorized');
+  if(!r.ok) throw new Error('שגיאה ' + r.status);
+  return r.json();
+}
+
 /* ── כניסה ───────────────────────────────────────────────── */
 async function doLogin(e){
   e.preventDefault();
@@ -584,9 +639,10 @@ async function doLogin(e){
   if(!pw) return false;
   btn.disabled = true; btn.textContent = 'בודק...'; err.textContent = '';
   try {
-    KEY = await derive(pw);
+    KEY = await derive(pw, SALT_HEX);
+    PKEY = await derive(pw, PSALT_HEX);        /* אותה סיסמה, מלח נפרד → טוקן נפרד */
     await wk('/leads');                       /* האימות היחיד הוא שהוורקר עונה */
-    try { sessionStorage.setItem('dg_k', KEY); } catch(x){}
+    try { sessionStorage.setItem('dg_k', KEY); sessionStorage.setItem('dg_pk', PKEY); } catch(x){}
     document.getElementById('gate').classList.add('hidden');
     document.getElementById('app').classList.remove('hidden');
     await refresh();
@@ -599,8 +655,8 @@ async function doLogin(e){
   return false;
 }
 function logout(){
-  KEY = null;
-  try { sessionStorage.removeItem('dg_k'); } catch(x){}
+  KEY = null; PKEY = null;
+  try { sessionStorage.removeItem('dg_k'); sessionStorage.removeItem('dg_pk'); } catch(x){}
   location.reload();
 }
 
@@ -623,7 +679,7 @@ var BOOKED = ['meeting_set','meeting_attended','meeting_noshow','meeting_won'];
 var HELD = ['meeting_attended','meeting_won'];
 
 function renderStats(){
-  if(TAB === 'fb') return;   /* בלשונית הקבוצות שורת המספרים שייכת להן */
+  if(TAB === 'fb' || TAB === 'clients') return;   /* לכל לשונית שורת מספרים משלה */
   /* הצ'יפים העליונים סופרים לידים אמיתיים בלבד, בלי לידי בדיקה, כמו מסך הביצועים. */
   var rl = realLeads();
   var n = rl.length;
@@ -1348,19 +1404,24 @@ function showTab(t){
   TAB = t;
   document.getElementById('tab-leads').classList.toggle('on', t === 'leads');
   document.getElementById('tab-fb').classList.toggle('on', t === 'fb');
+  document.getElementById('tab-clients').classList.toggle('on', t === 'clients');
   document.getElementById('list').classList.toggle('hidden', t !== 'leads');
   document.getElementById('fb').classList.toggle('hidden', t !== 'fb');
+  document.getElementById('clients').classList.toggle('hidden', t !== 'clients');
   document.getElementById('pbtn').classList.toggle('hidden', t !== 'leads');
+  document.getElementById('addbtn').classList.toggle('hidden', t !== 'leads');
   try { sessionStorage.setItem('dg_tab', t); } catch(x){}
   if(t === 'fb'){ if(FB) fbRender(); fbLoad(false, !!FB); }
+  else if(t === 'clients'){ if(PROJECTS.length) clientsRender(); clientsLoad(false, PROJECTS.length > 0); }
   else renderStats();
 }
 function restoreTab(){
   var t = null;
   try { t = sessionStorage.getItem('dg_tab'); } catch(x){}
   if(t === 'fb') showTab('fb');
+  else if(t === 'clients') showTab('clients');
 }
-function refreshTab(){ return TAB === 'fb' ? fbLoad(true) : refresh(); }
+function refreshTab(){ return TAB === 'fb' ? fbLoad(true) : (TAB === 'clients' ? clientsLoad(true) : refresh()); }
 
 async function fbLoad(withBtn, silent){
   var b = document.getElementById('rbtn');
@@ -1629,12 +1690,124 @@ setInterval(function(){
   if(TAB === 'fb' && KEY && !document.hidden && !fbTyping()) fbLoad(false, true);
 }, 30000);
 
+/* ══════════════════════════════════════════════════════════
+   לשונית ניהול לקוחות · מושכת מוורקר הפרויקטים (dg-gal-projects)
+   ══════════════════════════════════════════════════════════ */
+function pjLink(p, token){
+  return PWORKER + '/p/' + encodeURIComponent(p.id) + '?t=' + encodeURIComponent(token || '');
+}
+function pjCard(p){
+  var total = p.total || 0, done = p.done || 0, pct = total ? Math.round(done / total * 100) : 0;
+  var mineDone = p.mine_done || 0, mineTot = p.mine_total || 0;
+  var clDone = p.client_done || 0, clTot = p.client_total || 0, clOpen = Math.max(0, clTot - clDone);
+  var mineCls = (mineTot > 0 && mineDone === mineTot) ? ' doneall' : '';
+  var clCls = clTot === 0 ? '' : (clOpen > 0 ? ' wait' : ' doneall');
+  var clV = clTot === 0 ? '—' : (clOpen > 0 ? String(clOpen) : 'הכל התקבל');
+  var owner = pjLink(p, p.owner_token), client = pjLink(p, p.client_token);
+  var last = p.last_activity ? ago(p.last_activity) : '';
+  var h = '<div class="pj">';
+  h += '<h3>' + esc(p.business || p.id) + '</h3>';
+  if(p.client_name) h += '<div class="who">' + esc(p.client_name) + '</div>';
+  h += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
+  h += '<div class="pln"><span><b>' + done + '</b> / ' + total + ' פעולות</span><b>' + pct + '%</b></div>';
+  h += '<div class="rows">';
+  h += '<div class="mini' + mineCls + '"><div class="k">הצד שלי</div><div class="v">' + mineDone + ' / ' + mineTot + '</div></div>';
+  h += '<div class="mini' + clCls + '"><div class="k">ממתין מהלקוח</div><div class="v">' + clV + '</div></div>';
+  h += '</div>';
+  if(last) h += '<div class="last">פעילות אחרונה: ' + esc(last) + '</div>';
+  h += '<div class="acts">';
+  h += '<a class="open" href="' + esc(owner) + '" target="_blank" rel="noopener">פתח דוח</a>';
+  h += '<button class="cp" type="button" data-copy="' + esc(client) + '">העתק קישור ללקוח</button>';
+  h += '<a class="cp" href="' + esc(client) + '" target="_blank" rel="noopener">כלקוח ↗</a>';
+  h += '</div></div>';
+  return h;
+}
+function pjNewFormHtml(){
+  return '<details class="pjnew" id="pjNewForm">'
+    + '<summary>פרויקט חדש</summary>'
+    + '<div class="nf">'
+    + '<input id="pj-biz" placeholder="שם העסק" autocomplete="off">'
+    + '<input id="pj-client" placeholder="שם הלקוח" autocomplete="off">'
+    + '<input id="pj-id" class="idf" placeholder="מזהה באנגלית (למשל anderdog)" autocomplete="off">'
+    + '<div class="hint">המזהה יופיע בקישור. אותיות אנגלית, מספרים, מקף בלבד.</div>'
+    + '<button type="button" class="go" id="pj-create">צור פרויקט</button>'
+    + '</div></details>';
+}
+function clientsStats(){
+  var totalP = PROJECTS.length;
+  var waiting = PROJECTS.reduce(function(s, p){ return s + Math.max(0, (p.client_total || 0) - (p.client_done || 0)); }, 0);
+  var doneP = PROJECTS.filter(function(p){ return (p.total || 0) > 0 && p.done === p.total; }).length;
+  document.getElementById('stats').innerHTML =
+      '<span>פרויקטים <b>' + totalP + '</b></span>'
+    + '<span>ממתין מלקוחות <b>' + waiting + '</b></span>'
+    + '<span>הושלמו <b>' + doneP + '</b></span>';
+}
+function clientsRender(){
+  clientsStats();
+  var host = document.getElementById('clients');
+  if(!document.getElementById('pjNewForm')){
+    host.innerHTML = pjNewFormHtml() + '<div id="pjGridWrap"></div>';
+  }
+  var wrap = document.getElementById('pjGridWrap');
+  if(!PROJECTS.length){
+    wrap.innerHTML = '<div class="pjempty">אין עדיין פרויקטים.<br>צרו פרויקט חדש למעלה, או שאוסיף פרויקט מתוך סשן העבודה.</div>';
+  } else {
+    wrap.innerHTML = '<div class="pjgrid">' + PROJECTS.map(pjCard).join('') + '</div>';
+  }
+}
+async function clientsLoad(withBtn, silent){
+  if(!PKEY){
+    document.getElementById('clients').innerHTML =
+      '<div class="pjempty">כדי לטעון את הפרויקטים צאו והיכנסו מחדש (טעינת ההרשאה החדשה).</div>';
+    return;
+  }
+  var b = document.getElementById('rbtn');
+  if(withBtn){ b.disabled = true; b.textContent = 'טוען...'; }
+  try {
+    var r = await pwk('/api/admin/projects');
+    PROJECTS = r.projects || [];
+    clientsRender();
+  } catch(x){ if(!silent) toast(x.message === 'unauthorized' ? 'אין הרשאה לפרויקטים' : x.message); }
+  if(withBtn){ b.disabled = false; b.textContent = 'רענון'; }
+}
+async function createProject(){
+  var biz = ((document.getElementById('pj-biz') || {}).value || '').trim();
+  var cl  = ((document.getElementById('pj-client') || {}).value || '').trim();
+  var id  = ((document.getElementById('pj-id') || {}).value || '').trim();
+  if(!biz){ toast('צריך שם עסק'); return; }
+  if(!/^[A-Za-z0-9_-]+$/.test(id)){ toast('מזהה באנגלית בלבד (אותיות, מספרים, מקף)'); return; }
+  if(PROJECTS.some(function(p){ return p.id === id; })){ toast('כבר קיים פרויקט עם המזהה הזה'); return; }
+  var btn = document.getElementById('pj-create'); btn.disabled = true; btn.textContent = 'יוצר...';
+  try {
+    await pwk('/api/p/' + encodeURIComponent(id) + '/admin',
+      { method:'POST', body: JSON.stringify({ op:'create_project', business: biz, client_name: cl }) });
+    await clientsLoad(false, true);
+    ['pj-biz','pj-client','pj-id'].forEach(function(i){ var el = document.getElementById(i); if(el) el.value = ''; });
+    var f = document.getElementById('pjNewForm'); if(f) f.open = false;
+    toast('הפרויקט נוצר');
+  } catch(x){ toast(x.message === 'unauthorized' ? 'אין הרשאה' : ('לא נוצר: ' + x.message)); }
+  btn.disabled = false; btn.textContent = 'צור פרויקט';
+}
+document.addEventListener('click', function(e){
+  if(e.target && e.target.id === 'pj-create'){ e.preventDefault(); createProject(); }
+});
+function clientsTyping(){
+  var a = document.activeElement;
+  return a && document.getElementById('clients').contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+}
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && TAB === 'clients' && PKEY && !clientsTyping()) clientsLoad(false, true);
+});
+setInterval(function(){
+  if(TAB === 'clients' && PKEY && !document.hidden && !clientsTyping()) clientsLoad(false, true);
+}, 30000);
+
 /* חזרה ללשונית שכבר נכנסה בה */
 (function(){
-  var k = null;
-  try { k = sessionStorage.getItem('dg_k'); } catch(x){}
+  var k = null, pk = null;
+  try { k = sessionStorage.getItem('dg_k'); pk = sessionStorage.getItem('dg_pk'); } catch(x){}
   if(!k) return;
-  KEY = k;
+  KEY = k; PKEY = pk;
   wk('/leads').then(function(r){
     LEADS = r.leads || [];
     document.getElementById('gate').classList.add('hidden');

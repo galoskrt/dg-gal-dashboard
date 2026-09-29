@@ -17,6 +17,7 @@ OUT = os.path.join(REPO, "index.html")
 FONTS = os.path.join(REPO, "src", "fonts")
 
 SALT = "8f1cdaf9bbd12314431c09a532e6f3af"
+PSALT = "b95e2a0a1643090293913c4d20a1101c"  # מלח נפרד לוורקר הפרויקטים (ADMIN_TOKEN)
 
 
 def b64(p):
@@ -30,7 +31,7 @@ def build():
                 "font-display:swap;src:url(data:font/woff2;base64,%s) format('woff2');}\n"
                 % (weight, b64(os.path.join(FONTS, name))))
     h = io.open(SRC, encoding="utf-8").read()
-    h = h.replace("/*FONT*/", css).replace("/*SALT*/", SALT)
+    h = h.replace("/*FONT*/", css).replace("/*SALT*/", SALT).replace("/*PSALT*/", PSALT)
     io.open(OUT, "w", encoding="utf-8").write(h)
     print("dashboard built: %d KB" % (len(h.encode()) // 1024))
 
