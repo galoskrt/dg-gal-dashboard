@@ -356,6 +356,7 @@ tr.lrow:last-child td{border-bottom:0}
 .pj .bar>i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--orange))}
 .pj .pln{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:700;color:var(--mut2);font-variant-numeric:tabular-nums}
 .pj .pln b{color:var(--txt);font-size:13px}
+.pj .fr{direction:ltr;unicode-bidi:isolate;display:inline-block;font-variant-numeric:tabular-nums}
 .pj .rows{display:flex;gap:8px;margin:13px 0 4px}
 .pj .mini{flex:1;background:#faf9fd;border:1px solid var(--line);border-radius:12px;padding:9px 10px}
 .pj .mini .k{font-size:11px;font-weight:800;color:var(--mut2)}
@@ -1709,9 +1710,9 @@ function pjCard(p){
   h += '<h3>' + esc(p.business || p.id) + '</h3>';
   if(p.client_name) h += '<div class="who">' + esc(p.client_name) + '</div>';
   h += '<div class="bar"><i style="width:' + pct + '%"></i></div>';
-  h += '<div class="pln"><span><b>' + done + '</b> / ' + total + ' פעולות</span><b>' + pct + '%</b></div>';
+  h += '<div class="pln"><span><span class="fr"><b>' + done + '</b> / ' + total + '</span> פעולות</span><b>' + pct + '%</b></div>';
   h += '<div class="rows">';
-  h += '<div class="mini' + mineCls + '"><div class="k">הצד שלי</div><div class="v">' + mineDone + ' / ' + mineTot + '</div></div>';
+  h += '<div class="mini' + mineCls + '"><div class="k">הצד שלי</div><div class="v"><span class="fr">' + mineDone + ' / ' + mineTot + '</span></div></div>';
   h += '<div class="mini' + clCls + '"><div class="k">ממתין מהלקוח</div><div class="v">' + clV + '</div></div>';
   h += '</div>';
   if(last) h += '<div class="last">פעילות אחרונה: ' + esc(last) + '</div>';
